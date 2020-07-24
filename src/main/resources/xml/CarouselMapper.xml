@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frankfang.mapper.CarouselMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.frankfang.entity.Carousel">
+        <id column="id" property="id" />
+        <result column="cover" property="cover" />
+        <result column="url" property="url" />
+        <result column="title" property="title" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, cover, url, title
+    </sql>
+
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frankfang.mapper.CategoryMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="com.frankfang.entity.Category">
+		<id column="id" property="id" />
+		<result column="parent_id" property="parentId" />
+		<result column="parent_name" property="parentName" />
+		<result column="name" property="name" />
+		<result column="level" property="level" />
+		<result column="description" property="description" />
+		<result column="icon" property="icon" />
+		<result column="type" property="type" />
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id, parent_id, parent_name, name, level, description, icon, type
+	</sql>
+
+	<resultMap id="ExtendResultMap"
+               type="com.frankfang.bean.CategoryWithChildren" extends="BaseResultMap">
+		<collection property="children"
+			select="selectCategoryWithChildren" column="{parentId=id, type=type}"></collection>
+	</resultMap>
+
+	<select id="selectCategoryWithChildren" resultMap="ExtendResultMap">
+		SELECT * FROM tb_category WHERE parent_id=#{parentId} AND type=#{type}
+	</select>
+
+</mapper>
