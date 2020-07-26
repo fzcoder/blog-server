@@ -58,7 +58,7 @@ public class ArticleController {
 	private ArticleRecordService articleRecordService;
 
 	// 查询字段
-	private static final String[] SQLSELECT_LIST = { "id", "author_id", "title", "date", "update_time", "category_name",
+	private static final String[] SQLSELECT_LIST = { "id", "author_id", "title", "date", "update_time", "category_id",
 			"tags", "introduction", "cover" };
 
 	@ApiOperation(value = "添加文章")
@@ -73,8 +73,6 @@ public class ArticleController {
 		// 设置时间
 		article.setDate(sdf.format(date));
 		article.setUpdateTime(sdf.format(date));
-		// 设置目录名称
-		article.setCategoryName(categoryService.getById(article.getCategoryId()).getName());
 		if (service.save(article)) {
 			return new JsonResponse(HttpUtils.Status_OK, "添加文章成功！");
 		} else {
@@ -123,8 +121,10 @@ public class ArticleController {
 				.pageMaps(new Page<>(pageRequest.getPageNum(), pageRequest.getPageSize()), wrapper);
 		// 3. 数据封装
 		for (Map<String, Object> item : page.getRecords()) {
+			// 将标签转换为数组
 			String tags = item.get("tags").toString();
 			item.replace("tags", tags.split(","));
+			// 获取点赞数
 			QueryWrapper<Like> likeQueryWrapper = new QueryWrapper<>();
 			QueryWrapper<ArticleRecord> articleRecordQueryWrapper = new QueryWrapper<>();
 			Map<String, Object> map = new HashMap<>();
@@ -133,9 +133,12 @@ public class ArticleController {
 			likeQueryWrapper.allEq(true, map, false);
 			item.put("like", likeService.count(likeQueryWrapper));
 			map.clear();
+			// 获取阅读量
 			map.put("article_id", item.get("id"));
 			articleRecordQueryWrapper.allEq(true, map, false);
 			item.put("view", articleRecordService.count(articleRecordQueryWrapper));
+			// 设置目录名称
+			item.put("category_name", categoryService.getById(item.get("category_id").toString()).getName());
 		}
 		// 4. 返回结果
 		return new JsonResponse(page);
