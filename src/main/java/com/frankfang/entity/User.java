@@ -49,6 +49,18 @@ public class User implements UserDetails, Serializable{
 	@ApiModelProperty(value = "绑定邮箱")
     @TableField("email")
 	private String email;
+
+	@ApiModelProperty(value = "密码")
+	@TableField("home_page")
+	private String homePage;
+
+	@ApiModelProperty(value = "密码")
+	@TableField("github")
+	private String github;
+
+	@ApiModelProperty(value = "密码")
+	@TableField("gitee")
+	private String gitee;
 	
 	@ApiModelProperty(value = "密码")
     @TableField("password")
@@ -107,6 +119,30 @@ public class User implements UserDetails, Serializable{
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getHomePage() {
+		return this.homePage;
+	}
+
+	public void setHomePage(String homePage) {
+		this.homePage = homePage;
+	}
+
+	public String getGithub() {
+		return this.github;
+	}
+
+	public void setGithub(String github) {
+		this.github = github;
+	}
+
+	public String getGitee() {
+		return this.gitee;
+	}
+
+	public void setGitee(String gitee) {
+		this.gitee = gitee;
 	}
 
 	public void setPassword(String password) {

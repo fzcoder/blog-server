@@ -35,8 +35,8 @@ public class Article implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@ApiModelProperty(value = "id，作为唯一的表示")
-    @TableId(value = "id", type = IdType.AUTO)
-	private Integer id;
+    @TableId("id")
+	private Long id;
 	
 	@ApiModelProperty(value = "作者id")
     @TableField("author_id")

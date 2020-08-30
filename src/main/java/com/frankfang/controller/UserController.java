@@ -52,7 +52,7 @@ public class UserController {
 	@GetMapping("/user/{id}")
 	public Object getUserInfo(@PathVariable("id") Integer id, @RequestParam Map<String, Object> params) {
 		QueryWrapper<User> wrapper = new QueryWrapper<>();
-		String[] sqlSelect = { "nickname", "avatar", "motto", "introduction" };
+		String[] sqlSelect = { "nickname", "avatar", "motto", "introduction", "home_page", "github", "gitee" };
 		wrapper.eq(true, "id", id);
 		wrapper.select(sqlSelect);
 		return new JsonResponse(service.getMap(wrapper));

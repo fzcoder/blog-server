@@ -12,6 +12,9 @@
 		<result column="introduction" property="introduction" />
         <result column="email" property="email" />
         <result column="password" property="password" />
+        <result column="home_page" property="homePage" />
+        <result column="github" property="github" />
+        <result column="gitee" property="gitee" />
         <result column="enabled" property="enabled" />
         <result column="locked" property="locked" />
     </resultMap>

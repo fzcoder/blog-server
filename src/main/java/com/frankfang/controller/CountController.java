@@ -8,10 +8,7 @@ import com.frankfang.entity.record.ArticleRecord;
 import com.frankfang.entity.record.WebsiteRecord;
 import com.frankfang.bean.PageRequest;
 import com.frankfang.bean.JsonResponse;
-import com.frankfang.service.ArticleRecordService;
-import com.frankfang.service.ArticleService;
-import com.frankfang.service.LikeService;
-import com.frankfang.service.WebsiteRecordService;
+import com.frankfang.service.*;
 import com.frankfang.utils.HttpUtils;
 import com.frankfang.utils.IpUtils;
 import io.swagger.annotations.Api;
@@ -21,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -30,6 +28,9 @@ import java.util.*;
 @RequestMapping("/api")
 @RestController
 public class CountController {
+
+    @Autowired
+    private CountService countService;
 
     @Autowired
     private WebsiteRecordService websiteRecordService;
@@ -192,5 +193,10 @@ public class CountController {
             log.error("字符串转换日期发生异常!", e);
             return new JsonResponse(HttpUtils.Status_InternalServerError, "服务端异常！");
         }
+    }
+
+    @GetMapping("/dynamic")
+    public Object getDynamic(@RequestParam("uid") Serializable userId, @RequestParam("type") String type, @RequestParam("part_num") long partNum) {
+        return new JsonResponse(countService.getDynamicList(userId, type, partNum));
     }
 }

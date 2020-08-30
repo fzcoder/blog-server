@@ -8,10 +8,12 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.frankfang.aspect.RequestLimit;
 import com.frankfang.entity.Like;
 import com.frankfang.entity.record.ArticleRecord;
 import com.frankfang.service.ArticleRecordService;
 import com.frankfang.service.LikeService;
+import com.frankfang.utils.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,29 +63,67 @@ public class ArticleController {
 	private static final String[] SQLSELECT_LIST = { "id", "author_id", "title", "date", "update_time", "category_id",
 			"tags", "introduction", "cover" };
 
+	/**
+	 * 安全的id生成器，确保id在数据库中的唯一性
+	 * @param date 规格化日期
+	 * @return id 生成的Id
+	 */
+	private Long safeIdGenerator(String date) {
+		// 最大容量
+		int max = 1000;
+		// id统计器
+		Set<Long> set = new HashSet<>();
+		// 正则表达式
+		String regex = "-";
+		// id主键
+		Long id;
+		// 生成条件构造器
+		QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
+		// 判断生成的id是否重复并采取措施确保id全库唯一
+		do {
+			// 开始随机生成
+			id = IdGenerator.createIdByDate(date, regex, max);
+			// 将id存入集合中
+			set.add(id);
+			// 设置查询条件
+			queryWrapper.eq("id", id);
+			// 当集合中的元素等于最大容量时将id位数扩大1位(利用集合的不可重复性)
+			if (set.size() >= max) {
+				set.clear();
+				max *= 10;
+			}
+		} while (service.count(queryWrapper) != 0);
+		return id;
+	}
+
+	// 对该接口的访问次数进行限制，每秒仅可访问一次
+	@RequestLimit(count = 1, time = 1000)
 	@ApiOperation(value = "添加文章")
 	@PostMapping("/admin/article")
-	public Object addArticle(@RequestBody Article article) {
+	public Object addArticle(@RequestBody Article article, HttpServletRequest request) {
 		// 获取文章创建时间
 		Date date = new Date();
 		// 对时间进行格式化
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		SimpleDateFormat sdf_date = new SimpleDateFormat("yyyy-MM-dd");
 		// 设置时区为东8区(北京时间)
 		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
 		// 设置时间
 		article.setDate(sdf.format(date));
 		article.setUpdateTime(sdf.format(date));
+		// 生成文章id
+		article.setId(safeIdGenerator(sdf_date.format(date)));
 		if (service.save(article)) {
-			return new JsonResponse(HttpUtils.Status_OK, "添加文章成功！");
+			return new JsonResponse(HttpServletResponse.SC_OK, "添加文章成功！");
 		} else {
 			log.error("添加文章操作异常！");
-			return new JsonResponse(HttpUtils.Status_BadRequest, "添加文章失败！");
+			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "添加文章失败！");
 		}
 	}
 
 	@ApiOperation(value = "获取文章信息")
 	@GetMapping("/article/{id}")
-	public Object getOne(@PathVariable("id") Integer id) {
+	public Object getOne(@PathVariable("id") Long id) {
 		QueryWrapper<Article> wrapper = new QueryWrapper<>();
 		wrapper.eq("id", id);
 		Map<String, Object> article = service.getMap(wrapper);
@@ -99,7 +139,7 @@ public class ArticleController {
 	
 	@ApiOperation(value = "获取文章信息(admin)")
 	@GetMapping("/admin/article/{id}")
-	public Object getArticle(@PathVariable("id") Integer id) {
+	public Object getArticle(@PathVariable("id") Long id) {
 		return new JsonResponse(service.getById(id));
 	}
 
@@ -143,6 +183,43 @@ public class ArticleController {
 		// 4. 返回结果
 		return new JsonResponse(page);
 	}
+
+	@GetMapping("/article")
+	public Object getList(@RequestParam("key") String key, @RequestParam("page_num") long pageNum, @RequestParam("page_size") long pageSize, @RequestParam("is_reverse") boolean isReverse, @RequestParam("type") String type){
+		QueryWrapper<Article> articleQueryWrapper = new QueryWrapper<>();
+		if (type.equals("category")) {
+			// 按标题名称排序
+			articleQueryWrapper.orderBy(true, !isReverse, "title");
+		}
+		articleQueryWrapper.like(true, "title", key);
+		articleQueryWrapper.select(SQLSELECT_LIST);
+		// 分页查询
+		IPage<Map<String, Object>> page = service.pageMaps(new Page<>(pageNum, pageSize),articleQueryWrapper);
+		// 数据封装
+		for (Map<String, Object> item : page.getRecords()) {
+			// 将标签转换为数组
+			String tags = item.get("tags").toString();
+			item.replace("tags", tags.split(","));
+			// 获取点赞数
+			QueryWrapper<Like> likeQueryWrapper = new QueryWrapper<>();
+			QueryWrapper<ArticleRecord> articleRecordQueryWrapper = new QueryWrapper<>();
+			Map<String, Object> map = new HashMap<>();
+			map.put("object_name", "article");
+			map.put("object_id", item.get("id"));
+			likeQueryWrapper.allEq(true, map, false);
+			item.put("like", likeService.count(likeQueryWrapper));
+			map.clear();
+			// 获取阅读量
+			map.put("article_id", item.get("id"));
+			articleRecordQueryWrapper.allEq(true, map, false);
+			item.put("view", articleRecordService.count(articleRecordQueryWrapper));
+			// 设置目录名称
+			item.put("category_name", categoryService.getById(item.get("category_id").toString()).getName());
+		}
+
+		return new JsonResponse(page);
+	}
+
 
 	@ApiOperation(value = "上传文章")
 	@PostMapping("/admin/article/upload")
@@ -189,7 +266,7 @@ public class ArticleController {
 	
 	@ApiOperation(value = "下载文章")
 	@PostMapping("/admin/article/{id}/download")
-	public Object download(@PathVariable("id") Integer id, HttpServletResponse response) {
+	public Object download(@PathVariable("id") Long id, HttpServletResponse response) {
 		/*
 		 * // 获取文章创建时间 Date date = new Date(); // 设置时间格式 SimpleDateFormat sdf_file = new
 		 * SimpleDateFormat("yyyy/MM/dd"); SimpleDateFormat sdf_data = new
@@ -271,7 +348,7 @@ public class ArticleController {
 
 	@ApiOperation(value = "删除文章")
 	@DeleteMapping("/admin/article/{id}")
-	public Object deleteArticle(@PathVariable("id") Integer id) {
+	public Object deleteArticle(@PathVariable("id") Long id) {
 		if (service.removeById(id)) {
 			return new JsonResponse(HttpUtils.Status_OK, "文章删除成功！");
 		} else {

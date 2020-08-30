@@ -84,8 +84,9 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 				// 登录成功时，返回JSON格式进行提示
 				response.setContentType("application/json;charset=utf-8");
 				PrintWriter out = response.getWriter();
-				Map<String, Object> data = new HashMap<String, Object>();
+				Map<String, Object> data = new HashMap<>();
 				data.put("id", user.getId());
+				data.put("username", user.getUsername());
 				data.put("token", "Bearer " + token);
 				JsonResponse result = new JsonResponse(HttpUtils.Status_OK, "登录成功！", data);
 				out.write(new ObjectMapper().writeValueAsString(result));
