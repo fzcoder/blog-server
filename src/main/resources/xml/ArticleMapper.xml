@@ -15,11 +15,41 @@
         <result column="cover" property="cover" />
         <result column="content_md" property="contentMd" />
         <result column="content_html" property="contentHtml" />
+        <result column="status" property="status" />
+    </resultMap>
+
+    <!-- Article VO -->
+    <resultMap id="ArticleViewMap" type="com.frankfang.view.ArticleView">
+        <id column="id" property="id" />
+        <result column="title" property="title" />
+        <result column="date" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="introduction" property="introduction" />
+        <result column="tags" property="tags" />
+        <result column="cover" property="cover" />
+        <association property="author"
+                     javaType="com.frankfang.view.UserView"
+                     column="author_id"
+                     select="com.frankfang.mapper.UserMapper.selectViewObjectById" />
+        <association property="category"
+                     javaType="com.frankfang.view.CategoryView"
+                     column="category_id"
+                     select="com.frankfang.mapper.CategoryMapper.selectViewObjectById" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, author_id, title, date, update_time, introduction, category_id, tags, cover, content_md, content_html
+        id, author_id, title, date, update_time, introduction, category_id,
+        tags, cover, content_md, content_html, status
     </sql>
+
+    <select id="selectPages" resultMap="ArticleViewMap">
+        SELECT
+        id, author_id, title, `date`, update_time,
+        introduction, category_id, tags, cover
+        FROM
+        tb_article
+        ${ew.customSqlSegment}
+    </select>
 
 </mapper>

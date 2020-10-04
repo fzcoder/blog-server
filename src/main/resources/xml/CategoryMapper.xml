@@ -30,4 +30,14 @@
 		SELECT * FROM tb_category WHERE parent_id=#{parentId} AND type=#{type}
 	</select>
 
+	<select id="selectViewObjectById" resultType="com.frankfang.view.CategoryView">
+		SELECT
+		id AS categoryId,
+		name AS categoryName
+		FROM
+		tb_category
+		WHERE
+		id=#{categoryId}
+	</select>
+
 </mapper>

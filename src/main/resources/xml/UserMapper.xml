@@ -28,4 +28,20 @@
 		SELECT tb_role.* FROM tb_role INNER JOIN tb_user_role WHERE tb_role.id = tb_user_role.rid AND tb_user_role.uid = #{uid}
 	</select>
 
+    <select id="selectViewObjectById" resultType="com.frankfang.view.UserView">
+        SELECT
+        id AS userId,
+        nickname,
+        avatar,
+        home_page AS homePage,
+        github,
+        gitee,
+        motto,
+        introduction
+        FROM
+        tb_user
+        WHERE
+        id = #{uid}
+    </select>
+
 </mapper>

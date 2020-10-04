@@ -8,22 +8,16 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.frankfang.aspect.RequestLimit;
 import com.frankfang.entity.Like;
 import com.frankfang.entity.record.ArticleRecord;
 import com.frankfang.service.ArticleRecordService;
 import com.frankfang.service.LikeService;
+import com.frankfang.utils.ConstUtils;
 import com.frankfang.utils.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -184,13 +178,26 @@ public class ArticleController {
 		return new JsonResponse(page);
 	}
 
+	@ApiOperation(value = "获取文章列表")
 	@GetMapping("/article")
-	public Object getList(@RequestParam("key") String key, @RequestParam("page_num") long pageNum, @RequestParam("page_size") long pageSize, @RequestParam("is_reverse") boolean isReverse, @RequestParam("type") String type){
+	public Object getList(@RequestParam("key") String key, @RequestParam("page_num") long pageNum,
+						  @RequestParam("page_size") long pageSize,
+						  @RequestParam("is_reverse") boolean isReverse,
+						  @RequestParam("type") String type,
+						  @RequestParam Map<String, Object> params){
 		QueryWrapper<Article> articleQueryWrapper = new QueryWrapper<>();
 		if (type.equals("category")) {
 			// 按标题名称排序
 			articleQueryWrapper.orderBy(true, !isReverse, "title");
 		}
+		if (type.equals("dynamic")) {
+			// 按时间排序
+			articleQueryWrapper.orderBy(true, !isReverse, "date");
+		}
+		if (params.containsKey("category_id")) {
+			articleQueryWrapper.eq("category_id", params.get("category_id"));
+		}
+		articleQueryWrapper.eq("status", ConstUtils.ARTICLE_STATUS_PUBLISHED);
 		articleQueryWrapper.like(true, "title", key);
 		articleQueryWrapper.select(SQLSELECT_LIST);
 		// 分页查询
@@ -218,6 +225,24 @@ public class ArticleController {
 		}
 
 		return new JsonResponse(page);
+	}
+
+	@ApiOperation(value = "获取文章列表")
+	@GetMapping("/admin/article")
+	public Object getPages(@RequestParam("uid") Integer uid,
+						   @RequestParam("key") String key,
+						   @RequestParam("pageNum") long pageNum,
+						   @RequestParam("pageSize") long pageSize,
+						   @RequestParam("status") int status,
+						   @RequestParam Map<String, Object> params) {
+		// 判断请求是否正确
+		if (status == ConstUtils.ARTICLE_STATUS_DRAFT ||
+				status == ConstUtils.ARTICLE_STATUS_PUBLISHED ||
+				status == ConstUtils.ARTICLE_STATUS_REMOVED) {
+			return new JsonResponse(service.getPages(uid, key, pageNum, pageSize, status, params));
+		} else {
+			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "请求出错！");
+		}
 	}
 
 
@@ -343,6 +368,32 @@ public class ArticleController {
 		} else {
 			log.error("修改文章出现异常！");
 			return new JsonResponse(HttpUtils.Status_BadRequest, "文章修改失败！");
+		}
+	}
+
+	@ApiOperation(value = "修改文章局部信息")
+	@PatchMapping("/admin/article/{id}")
+	public Object updateArticleInfo(@PathVariable("id") Long id, @RequestBody Map<String, Object> map) {
+		if (map.containsKey("op") && map.containsKey("path") && map.containsKey("value")) {
+			UpdateWrapper<Article> updateWrapper = new UpdateWrapper<>();
+			updateWrapper.eq("id", id);
+			switch (map.get("path").toString())
+			{
+				case "/status":
+					if (map.get("op").toString().equals("replace")) {
+						updateWrapper.set("status", map.get("value"));
+					}
+					break;
+				default:
+					return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "请求错误!");
+			}
+			if (service.update(updateWrapper)) {
+				return new JsonResponse(HttpServletResponse.SC_OK, "更新成功!");
+			} else {
+				return new JsonResponse(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "更新失败!");
+			}
+		} else {
+			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "请求错误！");
 		}
 	}
 
