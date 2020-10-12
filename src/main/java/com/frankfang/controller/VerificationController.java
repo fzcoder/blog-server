@@ -96,7 +96,7 @@ public class VerificationController {
 		context.setVariable("code", code);
 		String mail = templateEngine.process("mailtemplate.html", context);
 		// 发送邮件
-		// mailService.sendHtmlMail(to, "邮箱验证码", mail);
+		mailService.sendHtmlMail(to, "邮箱验证码", mail);
 		return new JsonResponse(HttpUtils.Status_OK, "验证码发送成功！");
 	}
 
