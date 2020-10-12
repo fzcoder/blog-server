@@ -36,18 +36,12 @@ public class CategoryController {
 	private CategoryService categoryService;
 
 	// 查询字段
-	private static final String[] SQLSELECT_LIST = { "id", "parent_id", "parent_name", "name", "level", "description",
+	private static final String[] SQLSELECT_LIST = { "id", "parent_id", "name", "level", "description",
 			"icon", "type" };
 
 	@ApiOperation(value = "添加目录")
 	@PostMapping("/admin/category")
 	public Object addCategory(@RequestBody Category category) {
-		// 设置上级目录名称
-		if (category.getParentId().equals(0)) {
-			category.setParentName("无");
-		} else {
-			category.setParentName(categoryService.getById(category.getParentId()).getName());
-		}
 		// 添加记录
 		if (categoryService.save(category)) {
 			return new JsonResponse(HttpUtils.Status_OK, "添加目录成功！");
@@ -96,12 +90,6 @@ public class CategoryController {
 	@ApiOperation(value = "修改目录信息")
 	@PutMapping("/admin/category")
 	public Object updateCategory(@RequestBody Category category) {
-		// 设置上级目录名称
-		if (category.getParentId().equals(0)) {
-			category.setParentName("无");
-		} else {
-			category.setParentName(categoryService.getById(category.getParentId()).getName());
-		}
 		if (categoryService.updateById(category)) {
 			return new JsonResponse(HttpUtils.Status_OK, "修改目录成功！");
 		} else {
@@ -113,7 +101,7 @@ public class CategoryController {
 	@ApiOperation(value = "删除目录")
 	@DeleteMapping("/admin/category/{id}")
 	public Object deleteCategory(@PathVariable("id") Integer id) {
-		if (categoryService.removeById(id)) {
+		if (categoryService.removeWithChildren(id)) {
 			return new JsonResponse(HttpUtils.Status_OK, "删除目录成功！");
 		} else {
 			log.error("删除目录操作异常！");

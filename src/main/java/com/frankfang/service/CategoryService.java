@@ -14,4 +14,6 @@ import com.frankfang.bean.CategoryWithChildren;
 public interface CategoryService extends IService<Category> {
 	
 	List<CategoryWithChildren> getListWithChildren(Integer parentId, String type);
+
+	boolean removeWithChildren(Integer parentId);
 }

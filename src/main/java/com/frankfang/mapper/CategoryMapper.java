@@ -23,4 +23,11 @@ public interface CategoryMapper extends BaseMapper<Category> {
 
 	CategoryView selectViewObjectById(Integer categoryId);
 
+	/**
+	 * 删除该目录及其子目录
+	 * @param parentId 父目录id
+	 * @return
+	 */
+	int deleteCategoryWithChildren(@Param("parentId") Integer parentId);
+
 }

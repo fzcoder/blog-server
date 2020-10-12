@@ -32,6 +32,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     params.get("is_reverse").toString().equals("false"),
                     params.get("order_by").toString());
         }
+        // 当路径参数中存在category_id时
+        if (params.containsKey("category_id")) {
+            if (params.get("category_id").toString().equals("default")) {
+                queryWrapper.isNull("category_id");
+            } else {
+                queryWrapper.eq("category_id", params.get("category_id"));
+            }
+        }
         return articleMapper.selectPages(new Page<>(pageNum, pageSize), queryWrapper);
     }
 }
