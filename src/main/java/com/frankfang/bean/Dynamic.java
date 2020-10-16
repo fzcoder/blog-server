@@ -1,26 +1,24 @@
 package com.frankfang.bean;
 
+import com.frankfang.entity.Event;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 import java.util.Map;
 
-public class Dynamic implements Comparable<Dynamic> {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Dynamic {
 
     @ApiModelProperty(value = "时间戳")
     private String timeStamp;
 
-    @ApiModelProperty(value = "动态类型")
-    private String type;
-
     @ApiModelProperty(value = "动态内容列表")
-    private List<Map<String, Object>> content;
+    private List<Event> content;
 
-    public Dynamic() {
+    /* public Dynamic() {
     }
 
     public Dynamic(String timeStamp, String type, List<Map<String, Object>> content) {
@@ -58,8 +56,8 @@ public class Dynamic implements Comparable<Dynamic> {
      * @param d
      * @return
      */
-    @Override
-    public int compareTo(Dynamic d) {
+    // @Override
+    /* public int compareTo(Dynamic d) {
         return this.timeStamp.compareTo(d.timeStamp);
     }
 
@@ -79,5 +77,5 @@ public class Dynamic implements Comparable<Dynamic> {
         Dynamic d = (Dynamic)o;
 
         return this.timeStamp.equals(d.getTimeStamp());
-    }
+    } */
 }

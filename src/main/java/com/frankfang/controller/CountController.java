@@ -3,6 +3,7 @@ package com.frankfang.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.frankfang.bean.Dynamic;
 import com.frankfang.entity.Like;
 import com.frankfang.entity.record.ArticleRecord;
 import com.frankfang.entity.record.WebsiteRecord;
@@ -149,7 +150,7 @@ public class CountController {
             queryWrapper.allEq(true, params, false);
             queryWrapper.orderBy(true, !pageRequest.isReverse(), pageRequest.getOrderBy());
             queryWrapper.select(sqlSelect);
-            IPage<Map<String, Object>> page = websiteRecordService.pageMaps(new Page<>(pageRequest.getPageNum(), pageRequest.getPageSize()), queryWrapper);
+             IPage<Map<String, Object>> page = websiteRecordService.pageMaps(new Page<>(pageRequest.getPageNum(), pageRequest.getPageSize()), queryWrapper);
             return new JsonResponse(page);
         } else {
             return new JsonResponse(HttpUtils.Status_BadRequest, "请求错误！");
@@ -195,8 +196,13 @@ public class CountController {
         }
     }
 
-    @GetMapping("/dynamic")
-    public Object getDynamic(@RequestParam("uid") Serializable userId, @RequestParam("type") String type, @RequestParam("part_num") long partNum) {
-        return new JsonResponse(countService.getDynamicList(userId, type, partNum));
+    @GetMapping("/admin/dynamic")
+    public Object getDynamic(@RequestParam("uid") Integer uid, @RequestParam("start_date") String startDate, @RequestParam("end_date") String endDate) {
+        return new JsonResponse(countService.getDynamicList(uid, startDate, endDate));
+    }
+
+    @GetMapping("/admin/chart/contribution")
+    public Object getContribution(@RequestParam("uid") Integer uid, @RequestParam("start_date") String startDate, @RequestParam("end_date") String endDate) {
+        return new JsonResponse(countService.getContributionList(uid, startDate, endDate));
     }
 }

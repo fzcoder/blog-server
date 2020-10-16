@@ -10,10 +10,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.frankfang.aspect.RequestLimit;
+import com.frankfang.entity.Event;
 import com.frankfang.entity.Like;
 import com.frankfang.entity.record.ArticleRecord;
-import com.frankfang.service.ArticleRecordService;
-import com.frankfang.service.LikeService;
+import com.frankfang.service.*;
 import com.frankfang.utils.ConstUtils;
 import com.frankfang.utils.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +25,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.frankfang.entity.Article;
 import com.frankfang.bean.PageRequest;
 import com.frankfang.bean.JsonResponse;
-import com.frankfang.service.ArticleService;
-import com.frankfang.service.CategoryService;
 import com.frankfang.utils.HttpUtils;
 
 import io.swagger.annotations.Api;
@@ -49,6 +47,9 @@ public class ArticleController {
 
 	@Autowired
 	private LikeService likeService;
+
+	@Autowired
+	private EventService eventService;
 
 	@Autowired
 	private ArticleRecordService articleRecordService;
@@ -91,7 +92,7 @@ public class ArticleController {
 	}
 
 	// 对该接口的访问次数进行限制，每秒仅可访问一次
-	@RequestLimit(count = 1, time = 1000)
+	@RequestLimit
 	@ApiOperation(value = "添加文章")
 	@PostMapping("/admin/article")
 	public Object addArticle(@RequestBody Article article, HttpServletRequest request) {
@@ -100,17 +101,56 @@ public class ArticleController {
 		// 对时间进行格式化
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		SimpleDateFormat sdf_date = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat sdf_time = new SimpleDateFormat("HH:mm:ss");
 		// 设置时区为东8区(北京时间)
 		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+		sdf_date.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+		sdf_time.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
 		// 设置时间
 		article.setDate(sdf.format(date));
 		article.setUpdateTime(sdf.format(date));
 		// 生成文章id
 		article.setId(safeIdGenerator(sdf_date.format(date)));
+		// 添加事件
+		Event event = new Event();
+		event.setId(date.getTime());
+		event.setUid(article.getAuthorId());
+		event.setCreateTime(sdf_time.format(date));
+		event.setCreateDate(sdf_date.format(date));
+		event.setEventType(ConstUtils.EVENT_TYPE_SUCCESS);
+		event.setEventPosition(ConstUtils.EVENT_POSITION_CENTER);
+		if (article.getStatus() == ConstUtils.ARTICLE_STATUS_PUBLISHED) {
+			event.setEventContent("发布");
+			event.setPrefixContent("目录");
+			event.setPrefixLink("/article?category_id=" + article.getCategoryId());
+			event.setSuffixContent(article.getTitle());
+			event.setContribution(ConstUtils.EVENT_CONTRIBUTION_PUBLISHED);
+		} else {
+			event.setPrefixContent("草稿箱");
+			event.setPrefixLink("/article/draft");
+			event.setEventContent("添加");
+			event.setSuffixContent(article.getTitle());
+			event.setContribution(ConstUtils.EVENT_CONTRIBUTION_DRAFT);
+		}
+		// 插入数据
 		if (service.save(article)) {
+			event.setStatus(true);
+			if (article.getStatus() == ConstUtils.ARTICLE_STATUS_DRAFT) {
+				event.setSuffixLink("/article/update/" + article.getId());
+			} else {
+				event.setSuffixLink("/article/preview/" + article.getId());
+			}
+			if (!eventService.save(event)) {
+				log.error("添加事件异常！");
+			}
 			return new JsonResponse(HttpServletResponse.SC_OK, "添加文章成功！");
 		} else {
 			log.error("添加文章操作异常！");
+			event.setStatus(false);
+			event.setSuffixLink(null);
+			if (!eventService.save(event)) {
+				log.error("添加事件异常！");
+			}
 			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "添加文章失败！");
 		}
 	}
