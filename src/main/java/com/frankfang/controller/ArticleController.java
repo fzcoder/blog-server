@@ -148,47 +148,6 @@ public class ArticleController {
 	}
 
 	@ApiOperation(value = "获取文章列表")
-	@PostMapping("/article")
-	public Object getList(@RequestParam Map<String, Object> params, @RequestBody PageRequest pageRequest) {
-		// 1. 生成条件构造器
-		QueryWrapper<Article> wrapper = new QueryWrapper<>();
-		if (params.containsKey("tag")) {
-			wrapper.like(true, "tags", params.get("tag").toString());
-			params.remove("tag");
-		}
-		wrapper.allEq(true, params, false);
-		wrapper.like(true, "title", pageRequest.getKey());
-		wrapper.select(SQLSELECT_LIST);
-		wrapper.orderBy(true, !pageRequest.isReverse(), pageRequest.getOrderBy());
-		// 2. 分页查询
-		IPage<Map<String, Object>> page = service
-				.pageMaps(new Page<>(pageRequest.getPageNum(), pageRequest.getPageSize()), wrapper);
-		// 3. 数据封装
-		for (Map<String, Object> item : page.getRecords()) {
-			// 将标签转换为数组
-			String tags = item.get("tags").toString();
-			item.replace("tags", tags.split(","));
-			// 获取点赞数
-			QueryWrapper<Like> likeQueryWrapper = new QueryWrapper<>();
-			QueryWrapper<ArticleRecord> articleRecordQueryWrapper = new QueryWrapper<>();
-			Map<String, Object> map = new HashMap<>();
-			map.put("object_name", "article");
-			map.put("object_id", item.get("id"));
-			likeQueryWrapper.allEq(true, map, false);
-			item.put("like", likeService.count(likeQueryWrapper));
-			map.clear();
-			// 获取阅读量
-			map.put("article_id", item.get("id"));
-			articleRecordQueryWrapper.allEq(true, map, false);
-			item.put("view", articleRecordService.count(articleRecordQueryWrapper));
-			// 设置目录名称
-			item.put("category_name", categoryService.getById(item.get("category_id").toString()).getName());
-		}
-		// 4. 返回结果
-		return new JsonResponse(page);
-	}
-
-	@ApiOperation(value = "获取文章列表")
 	@GetMapping("/article")
 	public Object getList(@RequestParam("key") String key, @RequestParam("page_num") long pageNum,
 						  @RequestParam("page_size") long pageSize,
