@@ -2,16 +2,10 @@ package com.frankfang.controller;
 
 import java.util.Map;
 
+import com.frankfang.entity.Article;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -26,6 +20,8 @@ import com.frankfang.utils.HttpUtils;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
+import javax.servlet.http.HttpServletResponse;
 
 @Api(tags = "用户模块接口")
 @RestController
@@ -62,6 +58,15 @@ public class UserController {
 	@GetMapping("/admin/{id}")
 	public Object viewUserById(@PathVariable("id") Integer id, @RequestParam Map<String, Object> params) {
 		return new JsonResponse(service.getById(id));
+	}
+
+	@ApiOperation(value = "查询用户某一项信息(admin)")
+	@GetMapping("/admin/{id}/{column}")
+	public Object getColumnById(@PathVariable("id") Integer id, @PathVariable("column") String column) {
+		QueryWrapper<User> wrapper = new QueryWrapper<>();
+		wrapper.select(column);
+		wrapper.eq("id", id);
+		return new JsonResponse(service.getMap(wrapper));
 	}
 
 	@ApiOperation(value = "获取用户列表")
@@ -166,6 +171,37 @@ public class UserController {
 				}
 			default:
 				return new JsonResponse(HttpUtils.Status_BadRequest, "请求错误");
+		}
+	}
+
+	@ApiOperation(value = "修改用户局部信息")
+	@PatchMapping("/admin/{id}")
+	public Object updateArticleInfo(@PathVariable("id") Integer id, @RequestBody Map<String, Object> map) {
+		if (map.containsKey("op") && map.containsKey("path") && map.containsKey("value")) {
+			UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+			updateWrapper.eq("id", id);
+			switch (map.get("path").toString())
+			{
+				case "/github":
+					if (map.get("op").toString().equals("replace")) {
+						updateWrapper.set("github", map.get("value"));
+					}
+					break;
+				case "/gitee":
+					if (map.get("op").toString().equals("replace")) {
+						updateWrapper.set("gitee", map.get("value"));
+					}
+					break;
+				default:
+					return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "请求错误!");
+			}
+			if (service.update(updateWrapper)) {
+				return new JsonResponse(HttpServletResponse.SC_OK, "更新成功!");
+			} else {
+				return new JsonResponse(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "更新失败!");
+			}
+		} else {
+			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "请求错误！");
 		}
 	}
 }
