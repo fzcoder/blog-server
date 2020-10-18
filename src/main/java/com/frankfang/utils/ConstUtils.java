@@ -60,4 +60,9 @@ public interface ConstUtils {
      *
      */
     int EVENT_CONTRIBUTION_DRAFT = 1;
+
+    /**
+     *
+     */
+    int EVENT_CONTRIBUTION_NONE = 0;
 }

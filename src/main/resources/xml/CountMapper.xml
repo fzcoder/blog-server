@@ -29,6 +29,7 @@
         SELECT create_date AS time_stamp, uid FROM tb_event
         WHERE uid=#{uid} AND create_date BETWEEN #{start_date} AND #{end_date}
         GROUP BY create_date
+        ORDER BY create_date DESC
     </select>
 
     <select id="selectContributionList" resultType="java.util.Map">
@@ -36,6 +37,7 @@
         FROM tb_event
         WHERE
         uid=#{uid} AND
+        status=1 AND
         create_date BETWEEN #{start_date} AND #{end_date}
         GROUP BY create_date
     </select>

@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.frankfang.aspect.RequestLimit;
-import com.frankfang.entity.Event;
 import com.frankfang.entity.Like;
 import com.frankfang.entity.record.ArticleRecord;
 import com.frankfang.service.*;
@@ -101,54 +100,25 @@ public class ArticleController {
 		// 对时间进行格式化
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		SimpleDateFormat sdf_date = new SimpleDateFormat("yyyy-MM-dd");
-		SimpleDateFormat sdf_time = new SimpleDateFormat("HH:mm:ss");
 		// 设置时区为东8区(北京时间)
 		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
 		sdf_date.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-		sdf_time.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
 		// 设置时间
 		article.setDate(sdf.format(date));
 		article.setUpdateTime(sdf.format(date));
 		// 生成文章id
 		article.setId(safeIdGenerator(sdf_date.format(date)));
-		// 添加事件
-		Event event = new Event();
-		event.setId(date.getTime());
-		event.setUid(article.getAuthorId());
-		event.setCreateTime(sdf_time.format(date));
-		event.setCreateDate(sdf_date.format(date));
-		event.setEventType(ConstUtils.EVENT_TYPE_SUCCESS);
-		event.setEventPosition(ConstUtils.EVENT_POSITION_CENTER);
-		if (article.getStatus() == ConstUtils.ARTICLE_STATUS_PUBLISHED) {
-			event.setEventContent("发布");
-			event.setPrefixContent("目录");
-			event.setPrefixLink("/article?category_id=" + article.getCategoryId());
-			event.setSuffixContent(article.getTitle());
-			event.setContribution(ConstUtils.EVENT_CONTRIBUTION_PUBLISHED);
-		} else {
-			event.setPrefixContent("草稿箱");
-			event.setPrefixLink("/article/draft");
-			event.setEventContent("添加");
-			event.setSuffixContent(article.getTitle());
-			event.setContribution(ConstUtils.EVENT_CONTRIBUTION_DRAFT);
-		}
 		// 插入数据
 		if (service.save(article)) {
-			event.setStatus(true);
-			if (article.getStatus() == ConstUtils.ARTICLE_STATUS_DRAFT) {
-				event.setSuffixLink("/article/update/" + article.getId());
-			} else {
-				event.setSuffixLink("/article/preview/" + article.getId());
-			}
-			if (!eventService.save(event)) {
+			// 添加事件
+			if (!eventService.handleInsertArticleEvent(date, article, true)) {
 				log.error("添加事件异常！");
 			}
 			return new JsonResponse(HttpServletResponse.SC_OK, "添加文章成功！");
 		} else {
 			log.error("添加文章操作异常！");
-			event.setStatus(false);
-			event.setSuffixLink(null);
-			if (!eventService.save(event)) {
+			// 添加事件
+			if (!eventService.handleInsertArticleEvent(date, article, false)) {
 				log.error("添加事件异常！");
 			}
 			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "添加文章失败！");
@@ -403,9 +373,17 @@ public class ArticleController {
 		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
 		// 设置时间
 		article.setUpdateTime(sdf.format(date));
+		// 判断是否为草稿
+		boolean isDraft = service.getById(article.getId()).getStatus() == ConstUtils.ARTICLE_STATUS_DRAFT;
 		if (service.updateById(article)) {
+			if (!eventService.handleUpdateArticleEvent(date, article, true, isDraft)) {
+				log.error("添加事件异常！");
+			}
 			return new JsonResponse(HttpUtils.Status_OK, "文章修改成功！");
 		} else {
+			if (!eventService.handleUpdateArticleEvent(date, article, false, isDraft)) {
+				log.error("添加事件异常！");
+			}
 			log.error("修改文章出现异常！");
 			return new JsonResponse(HttpUtils.Status_BadRequest, "文章修改失败！");
 		}
@@ -441,8 +419,14 @@ public class ArticleController {
 	@DeleteMapping("/admin/article/{id}")
 	public Object deleteArticle(@PathVariable("id") Long id) {
 		if (service.removeById(id)) {
+			if (!eventService.handleDeleteArticleEvent(new Date(), id, true)) {
+				log.error("添加事件异常！");
+			}
 			return new JsonResponse(HttpUtils.Status_OK, "文章删除成功！");
 		} else {
+			if (!eventService.handleDeleteArticleEvent(new Date(), id, false)) {
+				log.error("添加事件异常！");
+			}
 			log.error("删除文章出现异常！");
 			return new JsonResponse(HttpUtils.Status_BadRequest, "文章删除失败！");
 		}
