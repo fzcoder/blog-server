@@ -40,9 +40,6 @@ public class ArticleController {
 
 	@Autowired
 	private ArticleService service;
-	
-	@Autowired
-	private CategoryService categoryService;
 
 	@Autowired
 	private LikeService likeService;
@@ -163,6 +160,10 @@ public class ArticleController {
 			// 按时间排序
 			articleQueryWrapper.orderBy(true, !isReverse, "date");
 		}
+		if (type.equals("search")) {
+			// 按时间排序
+			articleQueryWrapper.orderBy(true, !isReverse, "title");
+		}
 		if (params.containsKey("category_id")) {
 			articleQueryWrapper.eq("category_id", params.get("category_id"));
 		}
@@ -189,8 +190,6 @@ public class ArticleController {
 			map.put("article_id", item.get("id"));
 			articleRecordQueryWrapper.allEq(true, map, false);
 			item.put("view", articleRecordService.count(articleRecordQueryWrapper));
-			// 设置目录名称
-			item.put("category_name", categoryService.getById(item.get("category_id").toString()).getName());
 		}
 
 		return new JsonResponse(page);
@@ -260,7 +259,7 @@ public class ArticleController {
 	
 	@ApiOperation(value = "下载文章")
 	@PostMapping("/admin/article/{id}/download")
-	public Object download(@PathVariable("id") Long id, HttpServletResponse response) {
+	public void download(@PathVariable("id") Long id, HttpServletResponse response) {
 		/*
 		 * // 获取文章创建时间 Date date = new Date(); // 设置时间格式 SimpleDateFormat sdf_file = new
 		 * SimpleDateFormat("yyyy/MM/dd"); SimpleDateFormat sdf_data = new
@@ -287,7 +286,6 @@ public class ArticleController {
 		} catch (Exception e) {
 			log.error("文件写入发生异常！");
 			e.printStackTrace();
-			return new JsonResponse(HttpUtils.Status_InternalServerError, "下载发生错误！");
 		}
 		// 设置下载文件格式
 		response.setContentType("application/octet-stream");
@@ -311,14 +309,11 @@ public class ArticleController {
 		} catch (Exception e) {
 			log.error("文件传输出现异常！");
 			e.printStackTrace();
-			return new JsonResponse(HttpUtils.Status_InternalServerError, "下载发生错误！");
 		}
 		// 删除文件
 		if (!file.delete()) {
 			log.warn("文件删除失败！");
 		}
-		// 返回数据
-		return new JsonResponse(HttpUtils.Status_OK, "文章下载成功！");
 	}
 
 	@ApiOperation(value = "修改文章")
