@@ -18,4 +18,28 @@
           tb_article.author_id = #{uid}
     </select>
 
+    <resultMap id="DynamicMap" type="com.frankfang.bean.Dynamic">
+        <result column="time_stamp" property="timeStamp"></result>
+        <collection property="content"
+                    column="{create_date=time_stamp,uid=uid}"
+                    select="com.frankfang.mapper.EventMapper.selectListWithCreateDate"/>
+    </resultMap>
+
+    <select id="selectDynamicList" resultMap="DynamicMap">
+        SELECT create_date AS time_stamp, uid FROM tb_event
+        WHERE uid=#{uid} AND create_date BETWEEN #{start_date} AND #{end_date}
+        GROUP BY create_date
+        ORDER BY create_date DESC
+    </select>
+
+    <select id="selectContributionList" resultType="java.util.Map">
+        SELECT create_date AS `date`, SUM(contribution) AS contribution
+        FROM tb_event
+        WHERE
+        uid=#{uid} AND
+        status=1 AND
+        create_date BETWEEN #{start_date} AND #{end_date}
+        GROUP BY create_date
+    </select>
+
 </mapper>

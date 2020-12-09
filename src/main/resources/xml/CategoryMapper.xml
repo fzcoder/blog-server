@@ -7,7 +7,6 @@
 		type="com.frankfang.entity.Category">
 		<id column="id" property="id" />
 		<result column="parent_id" property="parentId" />
-		<result column="parent_name" property="parentName" />
 		<result column="name" property="name" />
 		<result column="level" property="level" />
 		<result column="description" property="description" />
@@ -17,7 +16,7 @@
 
 	<!-- 通用查询结果列 -->
 	<sql id="Base_Column_List">
-		id, parent_id, parent_name, name, level, description, icon, type
+		id, parent_id, name, level, description, icon, type
 	</sql>
 
 	<resultMap id="ExtendResultMap"
@@ -29,5 +28,19 @@
 	<select id="selectCategoryWithChildren" resultMap="ExtendResultMap">
 		SELECT * FROM tb_category WHERE parent_id=#{parentId} AND type=#{type}
 	</select>
+
+	<select id="selectViewObjectById" resultType="com.frankfang.view.CategoryView">
+		SELECT
+		id AS categoryId,
+		name AS categoryName
+		FROM
+		tb_category
+		WHERE
+		id=#{categoryId}
+	</select>
+
+	<delete id="deleteCategoryWithChildren">
+		DELETE FROM tb_category WHERE id = #{parentId} OR parent_id = #{parentId}
+	</delete>
 
 </mapper>

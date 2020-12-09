@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.frankfang.mapper.RecommendMapper">
-
-    <select id="getProperties" resultType="com.frankfang.bean.ArticleRecommendProperties">
-        SELECT article_id, COUNT(article_id) AS hits FROM tb_article_record GROUP BY article_id LIMIT 5
-    </select>
-
-</mapper>

@@ -77,4 +77,8 @@ public class Article implements Serializable {
 	@ApiModelProperty(value = "html格式内容")
     @TableField("content_html")
 	private String contentHtml;
+
+	@ApiModelProperty(value = "文章状态，0表示为草稿，1表示已发布，2表示已删除")
+	@TableField("status")
+	private int status;
 }

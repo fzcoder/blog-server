@@ -37,10 +37,6 @@ public class Category implements Serializable {
     @TableField("parent_id")
 	private Integer parentId;
 	
-	@ApiModelProperty(value = "上级菜单名称")
-    @TableField("parent_name")
-	private String parentName;
-	
 	@ApiModelProperty(value = "目录名称")
     @TableField("name")
 	private String name;

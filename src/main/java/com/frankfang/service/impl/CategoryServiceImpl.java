@@ -21,4 +21,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 	public List<CategoryWithChildren> getListWithChildren(Integer parentId, String type) {
 		return categoryMapper.selectCategoryWithChildren(parentId, type);
 	}
+
+    @Override
+    public boolean removeWithChildren(Integer parentId) {
+        return categoryMapper.deleteCategoryWithChildren(parentId) > 0;
+    }
 }

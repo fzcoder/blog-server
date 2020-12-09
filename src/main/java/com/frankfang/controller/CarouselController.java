@@ -32,6 +32,11 @@ public class CarouselController {
         }
     }
 
+    @GetMapping("/admin/setting/carousel/{id}")
+    public Object get (@PathVariable("id") Integer id) {
+        return new JsonResponse(carouselService.getById(id));
+    }
+
     @GetMapping("/carousel")
     public Object list() {
         return new JsonResponse(carouselService.list());

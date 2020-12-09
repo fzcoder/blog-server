@@ -8,22 +8,15 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.frankfang.aspect.RequestLimit;
 import com.frankfang.entity.Like;
 import com.frankfang.entity.record.ArticleRecord;
-import com.frankfang.service.ArticleRecordService;
-import com.frankfang.service.LikeService;
+import com.frankfang.service.*;
+import com.frankfang.utils.ConstUtils;
 import com.frankfang.utils.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -31,8 +24,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.frankfang.entity.Article;
 import com.frankfang.bean.PageRequest;
 import com.frankfang.bean.JsonResponse;
-import com.frankfang.service.ArticleService;
-import com.frankfang.service.CategoryService;
 import com.frankfang.utils.HttpUtils;
 
 import io.swagger.annotations.Api;
@@ -49,12 +40,12 @@ public class ArticleController {
 
 	@Autowired
 	private ArticleService service;
-	
-	@Autowired
-	private CategoryService categoryService;
 
 	@Autowired
 	private LikeService likeService;
+
+	@Autowired
+	private EventService eventService;
 
 	@Autowired
 	private ArticleRecordService articleRecordService;
@@ -97,7 +88,7 @@ public class ArticleController {
 	}
 
 	// 对该接口的访问次数进行限制，每秒仅可访问一次
-	@RequestLimit(count = 1, time = 1000)
+	@RequestLimit
 	@ApiOperation(value = "添加文章")
 	@PostMapping("/admin/article")
 	public Object addArticle(@RequestBody Article article, HttpServletRequest request) {
@@ -108,15 +99,25 @@ public class ArticleController {
 		SimpleDateFormat sdf_date = new SimpleDateFormat("yyyy-MM-dd");
 		// 设置时区为东8区(北京时间)
 		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+		sdf_date.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
 		// 设置时间
 		article.setDate(sdf.format(date));
 		article.setUpdateTime(sdf.format(date));
 		// 生成文章id
 		article.setId(safeIdGenerator(sdf_date.format(date)));
+		// 插入数据
 		if (service.save(article)) {
+			// 添加事件
+			if (!eventService.handleInsertArticleEvent(date, article, true)) {
+				log.error("添加事件异常！");
+			}
 			return new JsonResponse(HttpServletResponse.SC_OK, "添加文章成功！");
 		} else {
 			log.error("添加文章操作异常！");
+			// 添加事件
+			if (!eventService.handleInsertArticleEvent(date, article, false)) {
+				log.error("添加事件异常！");
+			}
 			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "添加文章失败！");
 		}
 	}
@@ -144,53 +145,29 @@ public class ArticleController {
 	}
 
 	@ApiOperation(value = "获取文章列表")
-	@PostMapping("/article")
-	public Object getList(@RequestParam Map<String, Object> params, @RequestBody PageRequest pageRequest) {
-		// 1. 生成条件构造器
-		QueryWrapper<Article> wrapper = new QueryWrapper<>();
-		if (params.containsKey("tag")) {
-			wrapper.like(true, "tags", params.get("tag").toString());
-			params.remove("tag");
-		}
-		wrapper.allEq(true, params, false);
-		wrapper.like(true, "title", pageRequest.getKey());
-		wrapper.select(SQLSELECT_LIST);
-		wrapper.orderBy(true, !pageRequest.isReverse(), pageRequest.getOrderBy());
-		// 2. 分页查询
-		IPage<Map<String, Object>> page = service
-				.pageMaps(new Page<>(pageRequest.getPageNum(), pageRequest.getPageSize()), wrapper);
-		// 3. 数据封装
-		for (Map<String, Object> item : page.getRecords()) {
-			// 将标签转换为数组
-			String tags = item.get("tags").toString();
-			item.replace("tags", tags.split(","));
-			// 获取点赞数
-			QueryWrapper<Like> likeQueryWrapper = new QueryWrapper<>();
-			QueryWrapper<ArticleRecord> articleRecordQueryWrapper = new QueryWrapper<>();
-			Map<String, Object> map = new HashMap<>();
-			map.put("object_name", "article");
-			map.put("object_id", item.get("id"));
-			likeQueryWrapper.allEq(true, map, false);
-			item.put("like", likeService.count(likeQueryWrapper));
-			map.clear();
-			// 获取阅读量
-			map.put("article_id", item.get("id"));
-			articleRecordQueryWrapper.allEq(true, map, false);
-			item.put("view", articleRecordService.count(articleRecordQueryWrapper));
-			// 设置目录名称
-			item.put("category_name", categoryService.getById(item.get("category_id").toString()).getName());
-		}
-		// 4. 返回结果
-		return new JsonResponse(page);
-	}
-
 	@GetMapping("/article")
-	public Object getList(@RequestParam("key") String key, @RequestParam("page_num") long pageNum, @RequestParam("page_size") long pageSize, @RequestParam("is_reverse") boolean isReverse, @RequestParam("type") String type){
+	public Object getList(@RequestParam("key") String key, @RequestParam("page_num") long pageNum,
+						  @RequestParam("page_size") long pageSize,
+						  @RequestParam("is_reverse") boolean isReverse,
+						  @RequestParam("type") String type,
+						  @RequestParam Map<String, Object> params){
 		QueryWrapper<Article> articleQueryWrapper = new QueryWrapper<>();
 		if (type.equals("category")) {
 			// 按标题名称排序
 			articleQueryWrapper.orderBy(true, !isReverse, "title");
 		}
+		if (type.equals("dynamic")) {
+			// 按时间排序
+			articleQueryWrapper.orderBy(true, !isReverse, "date");
+		}
+		if (type.equals("search")) {
+			// 按时间排序
+			articleQueryWrapper.orderBy(true, !isReverse, "title");
+		}
+		if (params.containsKey("category_id")) {
+			articleQueryWrapper.eq("category_id", params.get("category_id"));
+		}
+		articleQueryWrapper.eq("status", ConstUtils.ARTICLE_STATUS_PUBLISHED);
 		articleQueryWrapper.like(true, "title", key);
 		articleQueryWrapper.select(SQLSELECT_LIST);
 		// 分页查询
@@ -213,11 +190,27 @@ public class ArticleController {
 			map.put("article_id", item.get("id"));
 			articleRecordQueryWrapper.allEq(true, map, false);
 			item.put("view", articleRecordService.count(articleRecordQueryWrapper));
-			// 设置目录名称
-			item.put("category_name", categoryService.getById(item.get("category_id").toString()).getName());
 		}
 
 		return new JsonResponse(page);
+	}
+
+	@ApiOperation(value = "获取文章列表")
+	@GetMapping("/admin/article")
+	public Object getPages(@RequestParam("uid") Integer uid,
+						   @RequestParam("key") String key,
+						   @RequestParam("pageNum") long pageNum,
+						   @RequestParam("pageSize") long pageSize,
+						   @RequestParam("status") int status,
+						   @RequestParam Map<String, Object> params) {
+		// 判断请求是否正确
+		if (status == ConstUtils.ARTICLE_STATUS_DRAFT ||
+				status == ConstUtils.ARTICLE_STATUS_PUBLISHED ||
+				status == ConstUtils.ARTICLE_STATUS_REMOVED) {
+			return new JsonResponse(service.getPages(uid, key, pageNum, pageSize, status, params));
+		} else {
+			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "请求出错！");
+		}
 	}
 
 
@@ -266,7 +259,7 @@ public class ArticleController {
 	
 	@ApiOperation(value = "下载文章")
 	@PostMapping("/admin/article/{id}/download")
-	public Object download(@PathVariable("id") Long id, HttpServletResponse response) {
+	public void download(@PathVariable("id") Long id, HttpServletResponse response) {
 		/*
 		 * // 获取文章创建时间 Date date = new Date(); // 设置时间格式 SimpleDateFormat sdf_file = new
 		 * SimpleDateFormat("yyyy/MM/dd"); SimpleDateFormat sdf_data = new
@@ -293,7 +286,6 @@ public class ArticleController {
 		} catch (Exception e) {
 			log.error("文件写入发生异常！");
 			e.printStackTrace();
-			return new JsonResponse(HttpUtils.Status_InternalServerError, "下载发生错误！");
 		}
 		// 设置下载文件格式
 		response.setContentType("application/octet-stream");
@@ -317,14 +309,11 @@ public class ArticleController {
 		} catch (Exception e) {
 			log.error("文件传输出现异常！");
 			e.printStackTrace();
-			return new JsonResponse(HttpUtils.Status_InternalServerError, "下载发生错误！");
 		}
 		// 删除文件
 		if (!file.delete()) {
 			log.warn("文件删除失败！");
 		}
-		// 返回数据
-		return new JsonResponse(HttpUtils.Status_OK, "文章下载成功！");
 	}
 
 	@ApiOperation(value = "修改文章")
@@ -338,11 +327,45 @@ public class ArticleController {
 		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
 		// 设置时间
 		article.setUpdateTime(sdf.format(date));
+		// 判断是否为草稿
+		boolean isDraft = service.getById(article.getId()).getStatus() == ConstUtils.ARTICLE_STATUS_DRAFT;
 		if (service.updateById(article)) {
+			if (!eventService.handleUpdateArticleEvent(date, article, true, isDraft)) {
+				log.error("添加事件异常！");
+			}
 			return new JsonResponse(HttpUtils.Status_OK, "文章修改成功！");
 		} else {
+			if (!eventService.handleUpdateArticleEvent(date, article, false, isDraft)) {
+				log.error("添加事件异常！");
+			}
 			log.error("修改文章出现异常！");
 			return new JsonResponse(HttpUtils.Status_BadRequest, "文章修改失败！");
+		}
+	}
+
+	@ApiOperation(value = "修改文章局部信息")
+	@PatchMapping("/admin/article/{id}")
+	public Object updateArticleInfo(@PathVariable("id") Long id, @RequestBody Map<String, Object> map) {
+		if (map.containsKey("op") && map.containsKey("path") && map.containsKey("value")) {
+			UpdateWrapper<Article> updateWrapper = new UpdateWrapper<>();
+			updateWrapper.eq("id", id);
+			switch (map.get("path").toString())
+			{
+				case "/status":
+					if (map.get("op").toString().equals("replace")) {
+						updateWrapper.set("status", map.get("value"));
+					}
+					break;
+				default:
+					return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "请求错误!");
+			}
+			if (service.update(updateWrapper)) {
+				return new JsonResponse(HttpServletResponse.SC_OK, "更新成功!");
+			} else {
+				return new JsonResponse(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "更新失败!");
+			}
+		} else {
+			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "请求错误！");
 		}
 	}
 
@@ -350,8 +373,14 @@ public class ArticleController {
 	@DeleteMapping("/admin/article/{id}")
 	public Object deleteArticle(@PathVariable("id") Long id) {
 		if (service.removeById(id)) {
+			if (!eventService.handleDeleteArticleEvent(new Date(), id, true)) {
+				log.error("添加事件异常！");
+			}
 			return new JsonResponse(HttpUtils.Status_OK, "文章删除成功！");
 		} else {
+			if (!eventService.handleDeleteArticleEvent(new Date(), id, false)) {
+				log.error("添加事件异常！");
+			}
 			log.error("删除文章出现异常！");
 			return new JsonResponse(HttpUtils.Status_BadRequest, "文章删除失败！");
 		}

@@ -1,13 +1,13 @@
 package com.frankfang.service;
 
-import com.fasterxml.jackson.core.SerializableString;
 import com.frankfang.bean.Dynamic;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 public interface CountService {
 
-    List<Dynamic> getDynamicList(Serializable userId, String type, long partNum);
+    List<Dynamic> getDynamicList(Integer uid, String startDate, String endDate);
+
+    List<Map<String, Object>> getContributionList(Integer uid, String startDate, String endDate);
 }
