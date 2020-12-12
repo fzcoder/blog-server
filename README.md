@@ -1,2 +1,158 @@
-# blog-server
-采用 Spring Boot + Mybatis 框架编写的个人博客网站后台服务程序
+##  BLOG-SERVER
+
+一个采用 [Spring Boot](https://spring.io/projects/spring-boot) 和 [Mybatis](https://mybatis.org/mybatis-3/) 框架编写的个人博客网站服务端应用程序。
+
+### 一、项目简介
+
+本项目使用 [Spring Boot](https://spring.io/projects/spring-boot) 框架，并选用 [Mybatis](https://mybatis.org/mybatis-3/) 作为持久层框架，数据库选用 [MySQL](https://www.mysql.com/) ，缓存数据库选用 [Redis](https://redis.io/)。除此之外，还集成了 [MyBatis-Plus](https://github.com/baomidou/mybatis-plus)、[lombok](https://projectlombok.org/) 和 [Swagger](https://swagger.io/)，方便快速开发应用。
+
+项目的后台管理端地址为: [https://github.com/fzcoder/blog-admin](https://github.com/fzcoder/blog-admin)
+
+项目的 Web 端地址为: [https://github.com/fzcoder/blog-web](https://github.com/fzcoder/blog-web)
+
+### 二、功能特性
+
+详见`Release`版本说明。
+
+### 三、安装部署
+
+#### 1、克隆到本地
+
+```bash
+$ git clone https://github.com/fzcoder/blog-server.git
+```
+
+#### 2、添加配置文件
+
+出于安全性问题，本项目并未将`application.properties`文件添加到版本控制，您可以手动在`src/main/resourse`文件夹中分别添加`application.properties`、`application-dev.properties`、`application-test.properties`、`application-prod.properties`这四个文件，下面列出这四个文件的内容，您也可以从`Release`版本的附件中获取这四个文件
+
+##### application.properties
+
+```properties
+#多环境配置
+spring.profiles.active=@profileActive@
+
+#跨域配置
+http.cors.allowedOrigins=http://localhost,http://localhost:8080
+
+#阿里云OSS对象存储配置
+aliyun.oss.endpoint=<endpoint>
+aliyun.oss.accessKeyId=<your id>
+aliyun.oss.accessKeySecret=<your secret>
+aliyun.oss.bucketName=<bucketName>
+aliyun.oss.policy.expire=<expire>
+aliyun.oss.maxSize=<maxSize>
+aliyun.oss.dir.prefix=<prefix>
+aliyun.oss.callback=<callback>
+aliyun.oss.bindDomainName=<bindDomainName>
+
+#邮件服务配置
+spring.mail.host=smtp.<domain>.com
+spring.mail.port=<port>
+spring.mail.username=<username>
+spring.mail.password=<password>
+spring.mail.default-encoding=UTF-8
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.ssl.enable=true
+spring.mail.properties.mail.debug=true
+
+#thymeleaf配置
+spring.thymeleaf.cache=false
+
+#配置映射文件路径
+mybatis-plus.mapper-locations=classpath:xml/*.xml
+```
+
+##### application-dev.properties
+
+```properties
+#端口号
+server.port=8081
+
+#mysql数据库配置
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://127.0.0.1:3306/<database_name>?useAffectedRows=true
+spring.datasource.username=<username>
+spring.datasource.password=<password>
+
+#redis数据库配置
+spring.redis.database=0
+spring.redis.host=127.0.0.1
+spring.redis.port=6379
+spring.redis.password=<password>
+spring.redis.jedis.pool.max-active=8
+spring.redis.jedis.pool.max-idle=8
+spring.redis.jedis.pool.max-wait=-1ms
+spring.redis.jedis.pool.min-idle=0
+```
+
+##### application-test.properties
+
+```properties
+#端口号
+server.port=8081
+
+#mysql数据库配置
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://<host>:3306/<database_name>?useAffectedRows=true
+spring.datasource.username=<username>
+spring.datasource.password=<password>
+
+#redis数据库配置
+spring.redis.database=0
+spring.redis.host=<host>
+spring.redis.port=6379
+spring.redis.password=<password>
+spring.redis.jedis.pool.max-active=8
+spring.redis.jedis.pool.max-idle=8
+spring.redis.jedis.pool.max-wait=-1ms
+spring.redis.jedis.pool.min-idle=0
+```
+
+##### application-prod.properties
+
+```properties
+#端口号
+server.port=8081
+
+#mysql数据库配置
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://<host>:3306/<database_name>?useAffectedRows=true
+spring.datasource.username=<username>
+spring.datasource.password=<password>
+
+#redis数据库配置
+spring.redis.database=0
+spring.redis.host=<host>
+spring.redis.port=6379
+spring.redis.password=<password>
+spring.redis.jedis.pool.max-active=8
+spring.redis.jedis.pool.max-idle=8
+spring.redis.jedis.pool.max-wait=-1ms
+spring.redis.jedis.pool.min-idle=0
+```
+
+注：以上配置文件请根据实际情况进行修改
+
+#### 3、运行项目
+
+在项目根目录下打开终端，输入以下命令：
+
+```shell
+$ mvn clean package -P <environment name>
+```
+
+其中`environment name`根据实际情况进行填写，下面给出填写规则：
+
+| 环境     | environment name |
+| -------- | ---------------- |
+| 开发环境 | dev              |
+| 测试环境 | test             |
+| 生产环境 | prod             |
+
+当项目打包成功之后进入`target/`目录执行以下命令启动项目：
+
+```shell
+$ java -jar <package name>.jar
+```
+
