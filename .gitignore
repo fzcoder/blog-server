@@ -5,6 +5,7 @@ target/
 #!**/src/test/**
 **/src/main/resources/templates
 **/src/main/resources/application*.properties
+**/src/main/resources/static
 
 ### STS ###
 .apt_generated

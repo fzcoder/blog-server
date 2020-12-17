@@ -123,6 +123,20 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<!-- 打包时不过滤字体资源 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<configuration>
+					<nonFilteredFileExtensions>
+						<nonFilteredFileExtension>ttf</nonFilteredFileExtension>
+						<nonFilteredFileExtension>woff</nonFilteredFileExtension>
+						<nonFilteredFileExtension>woff2</nonFilteredFileExtension>
+						<nonFilteredFileExtension>eot</nonFilteredFileExtension>
+					</nonFilteredFileExtensions>
+				</configuration>
+				<version>3.2.0</version>
+			</plugin>
 		</plugins>
 
 		<!-- 重新指明资源文件位置 -->
@@ -148,6 +162,17 @@
 				<includes>
 					<include>application.properties</include>
 					<include>application-${profileActive}.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<!-- 包括字体文件 -->
+				<includes>
+					<include>**/*.woff</include>
+					<include>**/*.woff2</include>
+					<include>**/*.ttf</include>
+					<include>**/*.eot</include>
 				</includes>
 			</resource>
 		</resources>
