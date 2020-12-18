@@ -79,7 +79,7 @@ public class OssServiceImpl implements OssService {
 		// 文件大小
 		long maxSize = MAX_SIZE * 1024 * 1024;
 		// 提交节点
-		String action = "http://" + BUCKET_NAME + "." + ENDPOINT;
+		String action = "https://" + BUCKET_NAME + "." + ENDPOINT;
 		// 上传回调参数
 		Callback callback = new Callback();
 		// 指定请求回调的服务器URL
