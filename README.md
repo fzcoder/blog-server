@@ -12,7 +12,7 @@
 
 ### 二、功能特性
 
-详见`Release`版本说明。
+详见 [Release](https://github.com/fzcoder/blog-server/releases) 版本说明。
 
 ### 三、安装部署
 
@@ -24,7 +24,7 @@ $ git clone https://github.com/fzcoder/blog-server.git
 
 #### 2、添加配置文件
 
-出于安全性问题，本项目并未将`application.properties`文件添加到版本控制，您可以手动在`src/main/resourse`文件夹中分别添加`application.properties`、`application-dev.properties`、`application-test.properties`、`application-prod.properties`这四个文件，下面列出这四个文件的内容，您也可以从`Release`版本的附件中获取这四个文件
+出于安全性问题，本项目并未将`application.properties`文件添加到版本控制，您可以手动在`src/main/resources`文件夹中分别添加`application.properties`、`application-dev.properties`、`application-test.properties`、`application-prod.properties`这四个文件，下面列出这四个文件的内容，您也可以从`Release`版本的附件中获取这四个文件
 
 ##### application.properties
 
