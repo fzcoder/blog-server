@@ -4,7 +4,7 @@
 
 ### 一、项目简介
 
-本项目使用 [Spring Boot](https://spring.io/projects/spring-boot) 框架，并选用 [Mybatis](https://mybatis.org/mybatis-3/) 作为持久层框架，数据库选用 [MySQL](https://www.mysql.com/) ，缓存数据库选用 [Redis](https://redis.io/)。除此之外，还集成了 [MyBatis-Plus](https://github.com/baomidou/mybatis-plus)、[lombok](https://projectlombok.org/) 和 [Swagger](https://swagger.io/)，方便快速开发应用。
+本项目使用 [Spring Boot](https://spring.io/projects/spring-boot) 框架，并选用 [Mybatis](https://mybatis.org/mybatis-3/) 作为持久层框架，[Spring Security](https://spring.io/projects/spring-security) 作为安全框架，数据库选用 [MySQL](https://www.mysql.com/) ，缓存数据库选用 [Redis](https://redis.io/)。除此之外，还集成了 [MyBatis-Plus](https://github.com/baomidou/mybatis-plus)、[lombok](https://projectlombok.org/) 和 [Swagger](https://swagger.io/)，方便快速开发应用。
 
 项目的后台管理端地址为: [https://github.com/fzcoder/blog-admin](https://github.com/fzcoder/blog-admin)
 
@@ -33,7 +33,7 @@ $ git clone https://github.com/fzcoder/blog-server.git
 spring.profiles.active=@profileActive@
 
 #跨域配置
-http.cors.allowedOrigins=http://localhost,http://localhost:8080
+http.cors.allowedOrigins=<http|https>://host:<port>
 
 #阿里云OSS对象存储配置
 aliyun.oss.endpoint=<endpoint>
@@ -61,6 +61,21 @@ spring.thymeleaf.cache=false
 
 #配置映射文件路径
 mybatis-plus.mapper-locations=classpath:xml/*.xml
+
+#SSL配置
+#若无需配置SSL可将下面相关配置注释掉或删除,此外还需将TomcatConfig.java类注释掉或删除
+#证书位置
+server.ssl.key-store=classpath:ssl/<filename>.jks
+#密钥库密码
+server.ssl.key-password=<password>
+#证书类型
+server.ssl.key-store-type=JKS
+#证书别名
+server.ssl.key-alias=<alias>
+# 设置监听端口
+tomcat.listen.port=80
+# 设置重定向端口
+tomcat.redirect.port=443
 ```
 
 ##### application-dev.properties
@@ -113,7 +128,7 @@ spring.redis.jedis.pool.min-idle=0
 
 ```properties
 #端口号
-server.port=8081
+server.port=443
 
 #mysql数据库配置
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
