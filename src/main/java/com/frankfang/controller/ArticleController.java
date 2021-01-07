@@ -10,8 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.frankfang.aspect.RequestLimit;
-import com.frankfang.entity.Like;
-import com.frankfang.entity.record.ArticleRecord;
 import com.frankfang.service.*;
 import com.frankfang.utils.ConstUtils;
 import com.frankfang.utils.IdGenerator;
@@ -22,7 +20,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.frankfang.entity.Article;
-import com.frankfang.bean.PageRequest;
 import com.frankfang.bean.JsonResponse;
 import com.frankfang.utils.HttpUtils;
 
@@ -42,13 +39,7 @@ public class ArticleController {
 	private ArticleService service;
 
 	@Autowired
-	private LikeService likeService;
-
-	@Autowired
 	private EventService eventService;
-
-	@Autowired
-	private ArticleRecordService articleRecordService;
 
 	// 查询字段
 	private static final String[] SQLSELECT_LIST = { "id", "author_id", "title", "date", "update_time", "category_id",
@@ -177,19 +168,8 @@ public class ArticleController {
 			// 将标签转换为数组
 			String tags = item.get("tags").toString();
 			item.replace("tags", tags.split(","));
-			// 获取点赞数
-			QueryWrapper<Like> likeQueryWrapper = new QueryWrapper<>();
-			QueryWrapper<ArticleRecord> articleRecordQueryWrapper = new QueryWrapper<>();
-			Map<String, Object> map = new HashMap<>();
-			map.put("object_name", "article");
-			map.put("object_id", item.get("id"));
-			likeQueryWrapper.allEq(true, map, false);
-			item.put("like", likeService.count(likeQueryWrapper));
-			map.clear();
-			// 获取阅读量
-			map.put("article_id", item.get("id"));
-			articleRecordQueryWrapper.allEq(true, map, false);
-			item.put("view", articleRecordService.count(articleRecordQueryWrapper));
+			item.put("like", 0);
+			item.put("view", 0);
 		}
 
 		return new JsonResponse(page);
