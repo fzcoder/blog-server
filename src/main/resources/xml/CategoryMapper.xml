@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.frankfang.mapper.CategoryMapper">
+<mapper namespace="com.fzcoder.mapper.CategoryMapper">
 
 	<!-- 通用查询映射结果 -->
 	<resultMap id="BaseResultMap"
-		type="com.frankfang.entity.Category">
+		type="com.fzcoder.entity.Category">
 		<id column="id" property="id" />
 		<result column="parent_id" property="parentId" />
 		<result column="name" property="name" />
@@ -20,7 +20,7 @@
 	</sql>
 
 	<resultMap id="ExtendResultMap"
-               type="com.frankfang.bean.CategoryWithChildren" extends="BaseResultMap">
+               type="com.fzcoder.bean.CategoryWithChildren" extends="BaseResultMap">
 		<collection property="children"
 			select="selectCategoryWithChildren" column="{parentId=id, type=type}"></collection>
 	</resultMap>
@@ -29,7 +29,7 @@
 		SELECT * FROM tb_category WHERE parent_id=#{parentId} AND type=#{type}
 	</select>
 
-	<select id="selectViewObjectById" resultType="com.frankfang.view.CategoryView">
+	<select id="selectViewObjectById" resultType="com.fzcoder.view.CategoryView">
 		SELECT
 		id AS categoryId,
 		name AS categoryName

@@ -9,11 +9,11 @@
 		<version>2.2.2.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.frankfang</groupId>
+	<groupId>com.fzcoder</groupId>
 	<artifactId>blog</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>blog</name>
-	<description>A blog website for FrankFang</description>
+	<description>A personal blog website server application written by spring boot and mybatis framework</description>
 
 	<properties>
 		<java.version>1.8</java.version>
