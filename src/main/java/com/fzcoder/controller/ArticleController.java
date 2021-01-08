@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fzcoder.aspect.RequestLimit;
+import com.fzcoder.bean.ArticleDownloadConfigInfo;
 import com.fzcoder.service.*;
 import com.fzcoder.utils.ConstUtils;
 import com.fzcoder.utils.IdGenerator;
@@ -239,61 +240,9 @@ public class ArticleController {
 	
 	@ApiOperation(value = "下载文章")
 	@PostMapping("/admin/article/{id}/download")
-	public void download(@PathVariable("id") Long id, HttpServletResponse response) {
-		/*
-		 * // 获取文章创建时间 Date date = new Date(); // 设置时间格式 SimpleDateFormat sdf_file = new
-		 * SimpleDateFormat("yyyy/MM/dd"); SimpleDateFormat sdf_data = new
-		 * SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // 对时间进行格式化 String format_data =
-		 * sdf_data.format(date); String format_file = sdf_file.format(date); //
-		 * 获取项目的根路径 File path = new File(ResourceUtils.getURL("classpath:").getPath());
-		 * // 构建文件存放路径 File folder = new File(path.getAbsolutePath() +
-		 * "/static/upload/markdown/" + format_file); if (!folder.isDirectory()) {
-		 * folder.mkdirs(); }
-		 */
-		// 利用UUID生成下载文件名
-		String fileName = UUID.randomUUID().toString() + ".md";
-		// 创建文件
-		File file = new File(fileName);
-		try {
-			log.info("正在生成文件...");
-			// 创建输出流
-			FileOutputStream os = new FileOutputStream(file, false);
-			OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8);
-			// 写入文件
-			writer.append(service.getById(id).getContentMd());
-			// 关闭文件
-			writer.close();
-		} catch (Exception e) {
-			log.error("文件写入发生异常！");
-			e.printStackTrace();
-		}
-		// 设置下载文件格式
-		response.setContentType("application/octet-stream");
-		// 设置文件名
-		response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
-		response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
-		try {
-			log.info("正在进行文件流传输...");
-			// 实现文件下载
-			byte[] buffer = new byte[1024];
-			FileInputStream fis = new FileInputStream(file);
-			BufferedInputStream bis = new BufferedInputStream(fis);
-			OutputStream os = response.getOutputStream();
-			int i = bis.read(buffer);
-			while (i != -1) {
-				os.write(buffer, 0, i);
-				i = bis.read(buffer);
-			}
-			bis.close();
-			log.info("文件传输完成！");
-		} catch (Exception e) {
-			log.error("文件传输出现异常！");
-			e.printStackTrace();
-		}
-		// 删除文件
-		if (!file.delete()) {
-			log.warn("文件删除失败！");
-		}
+	public void download(@PathVariable("id") Long id, HttpServletResponse response,
+						 @RequestBody ArticleDownloadConfigInfo info) {
+		service.download(id, response, info);
 	}
 
 	@ApiOperation(value = "修改文章")
