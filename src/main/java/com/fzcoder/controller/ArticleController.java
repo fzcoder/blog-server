@@ -197,45 +197,8 @@ public class ArticleController {
 
 	@ApiOperation(value = "上传文章")
 	@PostMapping("/admin/article/upload")
-	public Object upload(HttpServletRequest request) {
-		// MultipartHttpServletRequest params=((MultipartHttpServletRequest) request);
-		List<MultipartFile> multipartFiles = ((MultipartHttpServletRequest) request)
-				.getFiles("file");
-		/* String name=params.getParameter("name");
-		System.out.println("name:"+name);
-		String id=params.getParameter("id");
-		System.out.println("id:"+id); */
-		MultipartFile multipartFile = null;
-		BufferedOutputStream stream;
-		for (MultipartFile MF : multipartFiles) {
-			multipartFile = MF;
-			if (!multipartFile.isEmpty()) {
-				try {
-					byte[] bytes = multipartFile.getBytes();
-					stream = new BufferedOutputStream(new FileOutputStream(
-							new File(multipartFile.getOriginalFilename())));
-					stream.write(bytes);
-					stream.close();
-				} catch (Exception e) {
-					return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "文件上传失败!");
-				}
-			} else {
-				return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "文件上传内容不能为空!");
-			}
-		}
-		// 读取文件内容
-		try {
-			File file = new File(multipartFile.getOriginalFilename());
-			FileInputStream inputStream = new FileInputStream(file);
-			byte[] b = new byte[inputStream.available()];
-			inputStream.read(b);
-			inputStream.close();
-			file.delete();
-			return new JsonResponse("文件上传成功!", new String(b));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "文件读取失败!");
-		}
+	public void upload(HttpServletRequest request, HttpServletResponse response) {
+		service.upload(request, response);
 	}
 	
 	@ApiOperation(value = "下载文章")

@@ -14,9 +14,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fzcoder.entity.Article;
 import com.fzcoder.mapper.ArticleMapper;
 import com.fzcoder.service.ArticleService;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Slf4j
@@ -50,6 +54,30 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         }
         return articleMapper.selectPages(new Page<>(pageNum, pageSize), queryWrapper);
+    }
+
+    @Override
+    public void upload(HttpServletRequest request, HttpServletResponse response) {
+        log.info("[upload]-->Start to upload file");
+        // 获取上传的二进制文件
+        MultipartFile multipartFile = ((MultipartHttpServletRequest) request).getFile("file");
+        // 判断上传的二进制文件是否为空
+        if (multipartFile == null) {
+            log.error("[upload]-->Not found the binary file");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        } else {
+            try {
+                // 设置响应体类型和字符集
+                response.setContentType("text/plain;charset=utf-8");
+                // 将文章内容写入到输出流
+                response.getWriter().write(new String(multipartFile.getBytes(), StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                log.error("[upload]-->There has something wrong with the upload", e);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            } finally {
+                log.info("[upload]-->End of upload");
+            }
+        }
     }
 
     @Override

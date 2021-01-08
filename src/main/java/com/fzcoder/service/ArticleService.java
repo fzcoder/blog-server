@@ -6,6 +6,7 @@ import com.fzcoder.bean.ArticleDownloadConfigInfo;
 import com.fzcoder.entity.Article;
 import com.fzcoder.view.ArticleView;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
@@ -18,6 +19,8 @@ public interface ArticleService extends IService<Article> {
 
     IPage<ArticleView> getPages(Integer uid, String keyword,
                                 long pageNum, long pageSize, int status, Map<String, Object> params);
+
+    void upload(HttpServletRequest request, HttpServletResponse response);
 
     void download(Long articleId, HttpServletResponse response, ArticleDownloadConfigInfo info);
 }
