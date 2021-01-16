@@ -1,4 +1,4 @@
-package com.fzcoder.view;
+package com.fzcoder.vo;
 
 import lombok.Data;
 
@@ -9,7 +9,7 @@ public class CategoryView implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Integer categoryId;
+    private String categoryId;
 
     private String categoryName;
 }

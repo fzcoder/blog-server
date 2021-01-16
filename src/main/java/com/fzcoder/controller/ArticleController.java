@@ -1,8 +1,5 @@
 package com.fzcoder.controller;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,15 +8,13 @@ import javax.servlet.http.HttpServletResponse;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fzcoder.aspect.RequestLimit;
 import com.fzcoder.bean.ArticleDownloadConfigInfo;
+import com.fzcoder.dto.ArticleForm;
 import com.fzcoder.service.*;
 import com.fzcoder.utils.ConstUtils;
-import com.fzcoder.utils.IdGenerator;
+import com.fzcoder.vo.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fzcoder.entity.Article;
 import com.fzcoder.bean.JsonResponse;
 import com.fzcoder.utils.HttpUtils;
@@ -27,8 +22,6 @@ import com.fzcoder.utils.HttpUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 @Slf4j
 @Api(tags = "文章模块接口")
@@ -39,149 +32,53 @@ public class ArticleController {
 	@Autowired
 	private ArticleService service;
 
-	@Autowired
-	private EventService eventService;
-
-	// 查询字段
-	private static final String[] SQLSELECT_LIST = { "id", "author_id", "title", "date", "update_time", "category_id",
-			"tags", "introduction", "cover" };
-
-	/**
-	 * 安全的id生成器，确保id在数据库中的唯一性
-	 * @param date 规格化日期
-	 * @return id 生成的Id
-	 */
-	private Long safeIdGenerator(String date) {
-		// 最大容量
-		int max = 1000;
-		// id统计器
-		Set<Long> set = new HashSet<>();
-		// 正则表达式
-		String regex = "-";
-		// id主键
-		Long id;
-		// 生成条件构造器
-		QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
-		// 判断生成的id是否重复并采取措施确保id全库唯一
-		do {
-			// 开始随机生成
-			id = IdGenerator.createIdByDate(date, regex, max);
-			// 将id存入集合中
-			set.add(id);
-			// 设置查询条件
-			queryWrapper.eq("id", id);
-			// 当集合中的元素等于最大容量时将id位数扩大1位(利用集合的不可重复性)
-			if (set.size() >= max) {
-				set.clear();
-				max *= 10;
-			}
-		} while (service.count(queryWrapper) != 0);
-		return id;
-	}
-
 	// 对该接口的访问次数进行限制，每秒仅可访问一次
 	@RequestLimit
 	@ApiOperation(value = "添加文章")
 	@PostMapping("/admin/article")
-	public Object addArticle(@RequestBody Article article, HttpServletRequest request) {
-		// 获取文章创建时间
-		Date date = new Date();
-		// 对时间进行格式化
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		SimpleDateFormat sdf_date = new SimpleDateFormat("yyyy-MM-dd");
-		// 设置时区为东8区(北京时间)
-		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-		sdf_date.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-		// 设置时间
-		article.setDate(sdf.format(date));
-		article.setUpdateTime(sdf.format(date));
-		// 生成文章id
-		article.setId(safeIdGenerator(sdf_date.format(date)));
+	public Object addArticle(@RequestBody ArticleForm form, HttpServletRequest request) {
 		// 插入数据
-		if (service.save(article)) {
-			// 添加事件
-			if (!eventService.handleInsertArticleEvent(date, article, true)) {
-				log.error("添加事件异常！");
-			}
+		if (service.save(form)) {
 			return new JsonResponse(HttpServletResponse.SC_OK, "添加文章成功！");
 		} else {
-			log.error("添加文章操作异常！");
-			// 添加事件
-			if (!eventService.handleInsertArticleEvent(date, article, false)) {
-				log.error("添加事件异常！");
-			}
 			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "添加文章失败！");
 		}
 	}
 
-	@ApiOperation(value = "获取文章信息")
-	@GetMapping("/article/{id}")
-	public Object getOne(@PathVariable("id") Long id) {
-		QueryWrapper<Article> wrapper = new QueryWrapper<>();
-		wrapper.eq("id", id);
-		Map<String, Object> article = service.getMap(wrapper);
-		if (article == null) {
-			return new JsonResponse(HttpServletResponse.SC_NOT_FOUND, "Error: Request failed with status code 404");
+	@ApiOperation(value = "获取文章视图")
+	@GetMapping("/admin/article/view")
+	public Object getOne(@RequestParam("aid") Long id) {
+		// 1.获取文章视图
+		Post post = service.getViewById(id);
+		// 2.判断视图是否为空
+		if (post == null) {
+			return new JsonResponse(HttpServletResponse.SC_NOT_FOUND,
+					"Error: Request failed with status code 404");
 		} else {
-			article.remove("content_md");
-			String tags = article.get("tags").toString();
-			article.replace("tags", tags.split(","));
-			return new JsonResponse(article);
+			return new JsonResponse(post);
 		}
 	}
 	
-	@ApiOperation(value = "获取文章信息(admin)")
-	@GetMapping("/admin/article/{id}")
-	public Object getArticle(@PathVariable("id") Long id) {
-		return new JsonResponse(service.getById(id));
-	}
-
-	@ApiOperation(value = "获取文章列表")
-	@GetMapping("/article")
-	public Object getList(@RequestParam("key") String key, @RequestParam("page_num") long pageNum,
-						  @RequestParam("page_size") long pageSize,
-						  @RequestParam("is_reverse") boolean isReverse,
-						  @RequestParam("type") String type,
-						  @RequestParam Map<String, Object> params){
-		QueryWrapper<Article> articleQueryWrapper = new QueryWrapper<>();
-		if (type.equals("category")) {
-			// 按标题名称排序
-			articleQueryWrapper.orderBy(true, !isReverse, "title");
+	@ApiOperation(value = "获取文章表单")
+	@GetMapping("/admin/article/form")
+	public Object getArticle(@RequestParam("aid") Long id) {
+		// 1.获取文章表单
+		ArticleForm form = service.getFormById(id);
+		// 2.判断文章表单是否为空
+		if (form == null) {
+			return new JsonResponse(HttpServletResponse.SC_NOT_FOUND,
+					"Error: Request failed with status code 404");
+		} else {
+			return new JsonResponse(form);
 		}
-		if (type.equals("dynamic")) {
-			// 按时间排序
-			articleQueryWrapper.orderBy(true, !isReverse, "date");
-		}
-		if (type.equals("search")) {
-			// 按时间排序
-			articleQueryWrapper.orderBy(true, !isReverse, "title");
-		}
-		if (params.containsKey("category_id")) {
-			articleQueryWrapper.eq("category_id", params.get("category_id"));
-		}
-		articleQueryWrapper.eq("status", ConstUtils.ARTICLE_STATUS_PUBLISHED);
-		articleQueryWrapper.like(true, "title", key);
-		articleQueryWrapper.select(SQLSELECT_LIST);
-		// 分页查询
-		IPage<Map<String, Object>> page = service.pageMaps(new Page<>(pageNum, pageSize),articleQueryWrapper);
-		// 数据封装
-		for (Map<String, Object> item : page.getRecords()) {
-			// 将标签转换为数组
-			String tags = item.get("tags").toString();
-			item.replace("tags", tags.split(","));
-			item.put("like", 0);
-			item.put("view", 0);
-		}
-
-		return new JsonResponse(page);
 	}
 
 	@ApiOperation(value = "获取文章列表")
 	@GetMapping("/admin/article")
 	public Object getPages(@RequestParam("uid") Integer uid,
 						   @RequestParam("key") String key,
-						   @RequestParam("pageNum") long pageNum,
-						   @RequestParam("pageSize") long pageSize,
+						   @RequestParam("page_num") long pageNum,
+						   @RequestParam("page_size") long pageSize,
 						   @RequestParam("status") int status,
 						   @RequestParam Map<String, Object> params) {
 		// 判断请求是否正确
@@ -210,28 +107,11 @@ public class ArticleController {
 
 	@ApiOperation(value = "修改文章")
 	@PutMapping("/admin/article")
-	public Object setArticle(@RequestBody Article article) {
-		// 获取文章创建时间
-		Date date = new Date();
-		// 对时间进行格式化
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		// 设置时区为东8区(北京时间)
-		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-		// 设置时间
-		article.setUpdateTime(sdf.format(date));
-		// 判断是否为草稿
-		boolean isDraft = service.getById(article.getId()).getStatus() == ConstUtils.ARTICLE_STATUS_DRAFT;
-		if (service.updateById(article)) {
-			if (!eventService.handleUpdateArticleEvent(date, article, true, isDraft)) {
-				log.error("添加事件异常！");
-			}
-			return new JsonResponse(HttpUtils.Status_OK, "文章修改成功！");
+	public Object setArticle(@RequestBody ArticleForm form) {
+		if (service.update(form)) {
+			return new JsonResponse(HttpServletResponse.SC_OK, "文章修改成功！");
 		} else {
-			if (!eventService.handleUpdateArticleEvent(date, article, false, isDraft)) {
-				log.error("添加事件异常！");
-			}
-			log.error("修改文章出现异常！");
-			return new JsonResponse(HttpUtils.Status_BadRequest, "文章修改失败！");
+			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "文章修改失败！");
 		}
 	}
 
@@ -265,15 +145,8 @@ public class ArticleController {
 	@DeleteMapping("/admin/article/{id}")
 	public Object deleteArticle(@PathVariable("id") Long id) {
 		if (service.removeById(id)) {
-			if (!eventService.handleDeleteArticleEvent(new Date(), id, true)) {
-				log.error("添加事件异常！");
-			}
 			return new JsonResponse(HttpUtils.Status_OK, "文章删除成功！");
 		} else {
-			if (!eventService.handleDeleteArticleEvent(new Date(), id, false)) {
-				log.error("添加事件异常！");
-			}
-			log.error("删除文章出现异常！");
 			return new JsonResponse(HttpUtils.Status_BadRequest, "文章删除失败！");
 		}
 	}

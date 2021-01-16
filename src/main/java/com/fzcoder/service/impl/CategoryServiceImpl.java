@@ -1,5 +1,6 @@
 package com.fzcoder.service.impl;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +19,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 	private CategoryMapper categoryMapper;
 
 	@Override
-	public List<CategoryWithChildren> getListWithChildren(Integer parentId, String type) {
+	public List<CategoryWithChildren> getListWithChildren(Serializable parentId, String type) {
 		return categoryMapper.selectCategoryWithChildren(parentId, type);
 	}
 
     @Override
-    public boolean removeWithChildren(Integer parentId) {
+    public boolean removeWithChildren(Serializable parentId) {
         return categoryMapper.deleteCategoryWithChildren(parentId) > 0;
     }
 }

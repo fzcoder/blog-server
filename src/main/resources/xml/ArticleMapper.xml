@@ -19,22 +19,33 @@
     </resultMap>
 
     <!-- Article VO -->
-    <resultMap id="ArticleViewMap" type="com.fzcoder.view.ArticleView">
+    <resultMap id="ArticleViewMap" type="com.fzcoder.vo.ArticleView">
         <id column="id" property="id" />
         <result column="title" property="title" />
         <result column="date" property="createTime" />
         <result column="update_time" property="updateTime" />
         <result column="introduction" property="introduction" />
-        <result column="tags" property="tags" />
         <result column="cover" property="cover" />
         <association property="author"
-                     javaType="com.fzcoder.view.UserView"
+                     javaType="com.fzcoder.vo.UserView"
                      column="author_id"
                      select="com.fzcoder.mapper.UserMapper.selectViewObjectById" />
         <association property="category"
-                     javaType="com.fzcoder.view.CategoryView"
+                     javaType="com.fzcoder.vo.CategoryView"
                      column="category_id"
                      select="com.fzcoder.mapper.CategoryMapper.selectViewObjectById" />
+        <collection property="tags"
+                    javaType="java.util.List"
+                    column="id"
+                    select="com.fzcoder.mapper.TagMapper.selectRelationList">
+            <id property="tagId" column="tag_id"/>
+            <result property="tagName" column="tag_name"/>
+        </collection>
+    </resultMap>
+
+    <!-- 展示文章VO -->
+    <resultMap id="PostMap" type="com.fzcoder.vo.Post" extends="ArticleViewMap">
+        <result column="content_html" property="contentHtml" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
@@ -43,13 +54,21 @@
         tags, cover, content_md, content_html, status
     </sql>
 
+    <select id="selectPostById" resultMap="PostMap">
+        SELECT * FROM tb_article WHERE id = #{id}
+    </select>
+
     <select id="selectPages" resultMap="ArticleViewMap">
         SELECT
         id, author_id, title, `date`, update_time,
-        introduction, category_id, tags, cover
+        introduction, category_id, tags, cover, content_html
         FROM
         tb_article
         ${ew.customSqlSegment}
+    </select>
+
+    <select id="countById" resultType="int">
+        SELECT COUNT(id) FROM tb_article WHERE id=#{id}
     </select>
 
 </mapper>

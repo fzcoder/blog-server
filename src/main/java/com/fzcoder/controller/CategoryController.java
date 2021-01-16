@@ -1,7 +1,9 @@
 package com.fzcoder.controller;
 
+import java.io.Serializable;
 import java.util.Map;
 
+import com.fzcoder.utils.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,6 +44,14 @@ public class CategoryController {
 	@ApiOperation(value = "添加目录")
 	@PostMapping("/admin/category")
 	public Object addCategory(@RequestBody Category category) {
+		String id = IdGenerator.createIdBy62BaseRandom(6);
+		QueryWrapper<Category> queryWrapper = new QueryWrapper<>();
+		queryWrapper.eq("id", id);
+		while (categoryService.count(queryWrapper) > 0) {
+			id = IdGenerator.createIdBy62BaseRandom(6);
+			queryWrapper.eq("id", id);
+		}
+		category.setId(id);
 		// 添加记录
 		if (categoryService.save(category)) {
 			return new JsonResponse(HttpUtils.Status_OK, "添加目录成功！");
@@ -53,7 +63,7 @@ public class CategoryController {
 
 	@ApiOperation(value = "获取目录信息")
 	@GetMapping("/admin/category/{id}")
-	public Object getOne(@PathVariable("id") Integer id) {
+	public Object getOne(@PathVariable("id") String id) {
 		return new JsonResponse(categoryService.getById(id));
 	}
 
@@ -61,7 +71,7 @@ public class CategoryController {
 	@GetMapping("/category/menu")
 	public Object getCategoryMenu(@RequestParam Map<String, Object> params) {
 		if (!params.containsKey("level")) {
-			return new JsonResponse(categoryService.getListWithChildren(0, params.get("type").toString()));
+			return new JsonResponse(categoryService.getListWithChildren("0", params.get("type").toString()));
 		} else {
 			QueryWrapper<Category> wrapper = new QueryWrapper<>();
 			wrapper.allEq(true, params, false);
@@ -100,7 +110,7 @@ public class CategoryController {
 
 	@ApiOperation(value = "删除目录")
 	@DeleteMapping("/admin/category/{id}")
-	public Object deleteCategory(@PathVariable("id") Integer id) {
+	public Object deleteCategory(@PathVariable("id") Serializable id) {
 		if (categoryService.removeWithChildren(id)) {
 			return new JsonResponse(HttpUtils.Status_OK, "删除目录成功！");
 		} else {

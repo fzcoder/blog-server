@@ -1,4 +1,4 @@
-package com.fzcoder.view;
+package com.fzcoder.vo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 public class ArticleView implements Serializable {
@@ -44,8 +45,7 @@ public class ArticleView implements Serializable {
     private CategoryView category;
 
     @ApiModelProperty(value = "文章标签，以英文逗号分隔")
-    @TableField("tags")
-    private String tags;
+    private List<TagView> tags;
 
     @ApiModelProperty(value = "封面链接")
     @TableField("cover")

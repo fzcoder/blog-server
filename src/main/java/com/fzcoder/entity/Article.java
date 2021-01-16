@@ -58,7 +58,7 @@ public class Article implements Serializable {
 	
 	@ApiModelProperty(value = "目录id")
     @TableField("category_id")
-	private Integer categoryId;
+	private String categoryId;
 	
 	@ApiModelProperty(value = "文章标签，以英文逗号分隔")
     @TableField("tags")

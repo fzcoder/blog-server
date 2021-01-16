@@ -1,4 +1,4 @@
-package com.fzcoder.view;
+package com.fzcoder.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

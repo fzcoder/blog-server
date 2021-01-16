@@ -5,7 +5,7 @@ import java.util.List;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.fzcoder.entity.Role;
 import com.fzcoder.entity.User;
-import com.fzcoder.view.UserView;
+import com.fzcoder.vo.UserView;
 
 public interface UserMapper extends BaseMapper<User> {
 

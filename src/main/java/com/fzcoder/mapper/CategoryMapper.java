@@ -1,8 +1,9 @@
 package com.fzcoder.mapper;
 
+import java.io.Serializable;
 import java.util.List;
 
-import com.fzcoder.view.CategoryView;
+import com.fzcoder.vo.CategoryView;
 import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -18,16 +19,16 @@ public interface CategoryMapper extends BaseMapper<Category> {
 	 * @param type
 	 * @return
 	 */
-	List<CategoryWithChildren> selectCategoryWithChildren(@Param("parentId") Integer parentId,
+	List<CategoryWithChildren> selectCategoryWithChildren(@Param("parentId") Serializable parentId,
 			@Param("type") String type);
 
-	CategoryView selectViewObjectById(Integer categoryId);
+	CategoryView selectViewObjectById(Serializable categoryId);
 
 	/**
 	 * 删除该目录及其子目录
 	 * @param parentId 父目录id
 	 * @return
 	 */
-	int deleteCategoryWithChildren(@Param("parentId") Integer parentId);
+	int deleteCategoryWithChildren(@Param("parentId") Serializable parentId);
 
 }

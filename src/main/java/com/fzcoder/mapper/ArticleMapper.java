@@ -5,13 +5,23 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.fzcoder.entity.Article;
-import com.fzcoder.view.ArticleView;
+import com.fzcoder.vo.ArticleView;
+import com.fzcoder.vo.Post;
 import org.apache.ibatis.annotations.Param;
+
+import java.io.Serializable;
 
 public interface ArticleMapper extends BaseMapper<Article> {
 
     /**
      *
+     * @param id
+     * @return
+     */
+    Post selectPostById(Long id);
+
+    /**
+     * 获取文章列表
      * @author Frank Fang
      * @date 2020-10-03
      * @param page 页面信息
@@ -19,4 +29,11 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @return
      */
     IPage<ArticleView> selectPages(IPage<ArticleView> page, @Param(Constants.WRAPPER) Wrapper<ArticleView> queryWrapper);
+
+    /**
+     * 根据id返回文章数量
+     * @param id
+     * @return
+     */
+    int countById(Serializable id);
 } 

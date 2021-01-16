@@ -4,8 +4,15 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fzcoder.bean.ArticleDownloadConfigInfo;
+import com.fzcoder.dto.ArticleForm;
 import com.fzcoder.mapper.CategoryMapper;
-import com.fzcoder.view.ArticleView;
+import com.fzcoder.service.EventService;
+import com.fzcoder.service.TagService;
+import com.fzcoder.utils.ConstUtils;
+import com.fzcoder.utils.IdGenerator;
+import com.fzcoder.vo.ArticleView;
+import com.fzcoder.vo.Post;
+import com.fzcoder.vo.TagView;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +28,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -32,6 +40,72 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Autowired
     private CategoryMapper categoryMapper;
+
+    @Autowired
+    private TagService tagService;
+
+    @Autowired
+    private EventService eventService;
+
+    @Override
+    public synchronized boolean save(ArticleForm form) {
+        try {
+            // 获取文章创建时间
+            Date date = new Date();
+            // 文章id的容量
+            int max = 1000;
+            // 生成文章id
+            Long id = IdGenerator.createIdByDate(date, max);
+            log.info("successful to create article id: " + id.toString());
+            // 判断id是否重复
+            Long id_base = id;
+            Long max_id = IdGenerator.getMaxIdValueForCreateByDate(date, max);
+            while (articleMapper.countById(id) > 0) {
+                id = (id + 1) % max_id;
+                if (id.equals(id_base)) {
+                    max *= 10;
+                    id = IdGenerator.createIdByDate(date, max);
+                    id_base = id;
+                    max_id = IdGenerator.getMaxIdValueForCreateByDate(date, max);
+                }
+                if (max > 10000) {
+                    return false;
+                }
+            }
+            // 构建Article对象
+            Article article = form.build(id);
+            // 对时间进行格式化
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            // 设置时区为东8区(北京时间)
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+            // 设置文章创建时间
+            article.setDate(sdf.format(date));
+            // 设置文章最后一次修改时间
+            article.setUpdateTime(sdf.format(date));
+            // 将文章添加至数据库中
+            boolean result = articleMapper.insert(article) > 0;
+            // 添加记录
+            eventService.handleInsertArticleEvent(date, article, result);
+            // 处理文章标签
+            log.info("try to process tags...");
+            tagService.saveRelation(form.getTags(), id);
+            // 返回结果
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public Post getViewById(Long id) {
+        return articleMapper.selectPostById(id);
+    }
+
+    @Override
+    public ArticleForm getFormById(Long id) {
+        return new ArticleForm(articleMapper.selectById(id), tagService.listRelation(id));
+    }
 
     @Override
     public IPage<ArticleView> getPages(Integer uid, String keyword,
@@ -116,9 +190,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                         // 标签
                         if (info.isWithTags()) {
                             header = header.concat("tags: \n");
-                            String[] tags = article.getTags().split(","); // 标签数组
-                            for (String tag : tags) {
-                                header = header.concat("- " + tag + "\n");
+                            List<TagView> tagViews = tagService.listRelation(articleId);
+                            for (TagView tagView : tagViews) {
+                                header = header.concat("- " + tagView.getTagName() + "\n");
                             }
                         }
                         // 目录
@@ -161,9 +235,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                         // 标签
                         if (info.isWithTags()) {
                             header = header.concat("tags = [ ");
-                            String[] tags = article.getTags().split(","); // 标签数组
-                            for (String tag : tags) {
-                                header = header.concat("\"" + tag + "\", ");
+                            List<TagView> tagViews = tagService.listRelation(articleId);
+                            for (TagView tagView : tagViews) {
+                                header = header.concat("\"" + tagView.getTagName() + "\", ");
                             }
                             header = header.substring(0, header.length() - 2);
                             header = header.concat(" ]\n");
@@ -221,5 +295,46 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         } finally {
             log.info("[Download]-->End of download");
         }
+    }
+
+    @Override
+    public boolean update(ArticleForm form) {
+        // 获取文章实体对象
+        Article article = form.build();
+        // 获取文章创建时间
+        Date date = new Date();
+        // 对时间进行格式化
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        // 设置时区为东8区(北京时间)
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+        // 设置时间
+        article.setUpdateTime(sdf.format(date));
+        // 处理文章标签
+        tagService.saveOrUpdateRelation(form.getTags(), article.getId());
+        // 判断是否为草稿
+        boolean isDraft = articleMapper
+                .selectById(article.getId())
+                .getStatus() == ConstUtils.ARTICLE_STATUS_DRAFT;
+        // 更新文章并返回结果
+        if (articleMapper.updateById(article) > 0) {
+            // 添加记录
+            eventService.handleUpdateArticleEvent(date, article, true, isDraft);
+            return true;
+        } else {
+            // 添加记录
+            eventService.handleUpdateArticleEvent(date, article, false, isDraft);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean removeById(Long id) {
+        // 1.删除所有tag-article关联
+        tagService.removeRelationByAid(id);
+        // 2.删除文章并返回结果
+        boolean result = articleMapper.deleteById(id) > 0;
+        // 3.添加删除记录
+        eventService.handleDeleteArticleEvent(new Date(), id, result);
+        return result;
     }
 }

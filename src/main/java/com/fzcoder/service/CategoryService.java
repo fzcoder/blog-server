@@ -1,5 +1,6 @@
 package com.fzcoder.service;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -13,7 +14,7 @@ import com.fzcoder.bean.CategoryWithChildren;
  */
 public interface CategoryService extends IService<Category> {
 	
-	List<CategoryWithChildren> getListWithChildren(Integer parentId, String type);
+	List<CategoryWithChildren> getListWithChildren(Serializable parentId, String type);
 
-	boolean removeWithChildren(Integer parentId);
+	boolean removeWithChildren(Serializable parentId);
 }

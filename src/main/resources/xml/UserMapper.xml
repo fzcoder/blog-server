@@ -28,7 +28,7 @@
 		SELECT tb_role.* FROM tb_role INNER JOIN tb_user_role WHERE tb_role.id = tb_user_role.rid AND tb_user_role.uid = #{uid}
 	</select>
 
-    <select id="selectViewObjectById" resultType="com.fzcoder.view.UserView">
+    <select id="selectViewObjectById" resultType="com.fzcoder.vo.UserView">
         SELECT
         id AS userId,
         nickname,

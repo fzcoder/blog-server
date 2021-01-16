@@ -30,12 +30,12 @@ public class Category implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@ApiModelProperty(value = "id，作为唯一的表示")
-    @TableId(value = "id", type = IdType.AUTO)
-	private Integer id;
+    @TableId(value = "id")
+	private String id;
 	
 	@ApiModelProperty(value = "上一级菜单id，为0则表示该菜单为根菜单")
     @TableField("parent_id")
-	private Integer parentId;
+	private String parentId;
 	
 	@ApiModelProperty(value = "目录名称")
     @TableField("name")
