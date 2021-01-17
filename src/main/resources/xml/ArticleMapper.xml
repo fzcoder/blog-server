@@ -55,13 +55,18 @@
     </sql>
 
     <select id="selectPostById" resultMap="PostMap">
-        SELECT * FROM tb_article WHERE id = #{id}
+        SELECT
+        id, author_id, title, `date`, update_time,
+        introduction, category_id, tags, cover, content_html
+        FROM
+        tb_article
+        WHERE id = #{id}
     </select>
 
     <select id="selectPages" resultMap="ArticleViewMap">
         SELECT
         id, author_id, title, `date`, update_time,
-        introduction, category_id, tags, cover, content_html
+        introduction, category_id, tags, cover
         FROM
         tb_article
         ${ew.customSqlSegment}
