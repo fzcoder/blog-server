@@ -9,8 +9,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,7 +21,6 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("tb_link")
-@ApiModel(value="link对象", description="")
 public class Link implements Serializable {
 
 	/**
@@ -31,31 +28,24 @@ public class Link implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "id，作为唯一的表示")
     @TableId(value = "id", type = IdType.AUTO)
 	private Integer id;
-	
-	@ApiModelProperty(value = "名称")
+
     @TableField("name")
 	private String name;
-	
-	@ApiModelProperty(value = "链接")
+
     @TableField("linkUrl")
 	private String linkUrl;
-	
-	@ApiModelProperty(value = "图标链接")
+
     @TableField("iconUrl")
 	private String iconUrl;
-	
-	@ApiModelProperty(value = "是否为快速链接")
+
     @TableField("shortcut")
 	private Boolean shortcut;
-	
-	@ApiModelProperty(value = "所属目录id")
+
     @TableField("category_id")
 	private Integer categoryId;
-	
-	@ApiModelProperty(value = "所属目录名称")
+
     @TableField("category_name")
 	private String categoryName;
 	

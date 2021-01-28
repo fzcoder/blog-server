@@ -2,8 +2,6 @@ package com.fzcoder.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fzcoder.entity.User;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
@@ -18,7 +16,6 @@ import com.fzcoder.utils.MailCodeUtils;
 
 import java.util.Map;
 
-@Api(tags = "验证模块接口")
 @RestController
 @RequestMapping("/api")
 public class VerificationController {
@@ -35,7 +32,6 @@ public class VerificationController {
 	@Autowired
 	private TemplateEngine templateEngine;
 
-	@ApiOperation(value = "获取验证码")
 	@GetMapping("/verify/{type}")
 	public Object getVerificationCode(@PathVariable("type") String type, @RequestParam Map<String, Object> params) {
 		// 收信人
@@ -100,7 +96,6 @@ public class VerificationController {
 		return new JsonResponse(HttpUtils.Status_OK, "验证码发送成功！");
 	}
 
-	@ApiOperation(value = "校验验证码")
 	@PostMapping("/verify/check")
 	public Object verificationCodeCheck(@RequestParam("key") Object key, @RequestParam("value") Object value) {
 		// 验证码校验

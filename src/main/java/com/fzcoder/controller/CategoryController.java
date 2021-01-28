@@ -24,12 +24,9 @@ import com.fzcoder.bean.JsonResponse;
 import com.fzcoder.service.CategoryService;
 import com.fzcoder.utils.HttpUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Api(tags = "目录模块接口")
 @RestController
 @RequestMapping("/api")
 public class CategoryController {
@@ -41,7 +38,6 @@ public class CategoryController {
 	private static final String[] SQLSELECT_LIST = { "id", "parent_id", "name", "level", "description",
 			"icon", "type" };
 
-	@ApiOperation(value = "添加目录")
 	@PostMapping("/admin/category")
 	public Object addCategory(@RequestBody Category category) {
 		String id = IdGenerator.createIdBy62BaseRandom(6);
@@ -61,13 +57,11 @@ public class CategoryController {
 		}
 	}
 
-	@ApiOperation(value = "获取目录信息")
 	@GetMapping("/admin/category/{id}")
 	public Object getOne(@PathVariable("id") String id) {
 		return new JsonResponse(categoryService.getById(id));
 	}
 
-	@ApiOperation(value = "获取目录菜单")
 	@GetMapping("/category/menu")
 	public Object getCategoryMenu(@RequestParam Map<String, Object> params) {
 		if (!params.containsKey("level")) {
@@ -81,7 +75,6 @@ public class CategoryController {
 		}
 	}
 
-	@ApiOperation(value = "查询目录列表")
 	@PostMapping("/category")
 	public Object getList(@RequestParam Map<String, Object> params, @RequestBody PageRequest pageRequest) {
 		// 1. 生成条件构造器
@@ -97,7 +90,6 @@ public class CategoryController {
 		return new JsonResponse(page);
 	}
 
-	@ApiOperation(value = "修改目录信息")
 	@PutMapping("/admin/category")
 	public Object updateCategory(@RequestBody Category category) {
 		if (categoryService.updateById(category)) {
@@ -108,7 +100,6 @@ public class CategoryController {
 		}
 	}
 
-	@ApiOperation(value = "删除目录")
 	@DeleteMapping("/admin/category/{id}")
 	public Object deleteCategory(@PathVariable("id") Serializable id) {
 		if (categoryService.removeWithChildren(id)) {

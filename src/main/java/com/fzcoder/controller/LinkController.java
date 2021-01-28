@@ -28,12 +28,9 @@ import com.fzcoder.service.CategoryService;
 import com.fzcoder.service.LinkService;
 import com.fzcoder.utils.HttpUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Api(tags = "链接模块接口")
 @RestController
 @RequestMapping("/api")
 public class LinkController {
@@ -48,7 +45,6 @@ public class LinkController {
 	private static final String[] SQLSELECT_LIST = { "id", "name", "linkUrl", "iconUrl", "shortcut", "category_id",
 			"category_name" };
 
-	@ApiOperation(value = "添加链接")
 	@PostMapping("/admin/link")
 	public Object addLink(@RequestBody Link link) {
 		link.setCategoryName(categoryService.getById(link.getCategoryId()).getName());
@@ -60,13 +56,11 @@ public class LinkController {
 		}
 	}
 
-	@ApiOperation(value = "获取链接信息")
 	@GetMapping("/link/{id}")
 	public Object getLink(@PathVariable("id") Integer id) {
 		return new JsonResponse(service.getById(id));
 	}
-	
-	@ApiOperation(value = "获取链接列表(条件查询)")
+
 	@GetMapping("/link")
 	public Object getList(@RequestParam Map<String, Object> params) {
 		if (params.containsKey("shortcut")) {
@@ -100,7 +94,6 @@ public class LinkController {
 		}
 	}
 
-	@ApiOperation(value = "查询链接列表(分页查询)")
 	@PostMapping("/link")
 	public Object getPage(@RequestParam Map<String, Object> params, @RequestBody PageRequest pageRequest) {
 		// 1. 生成条件构造器
@@ -115,8 +108,7 @@ public class LinkController {
 		// 3. 返回结果
 		return new JsonResponse(page);
 	}
-	
-	@ApiOperation(value = "修改链接(路径参数)")
+
 	@PutMapping("/admin/link/{id}")
 	public Object updateLink(@PathVariable("id") Integer id, @RequestParam Map<String, Object> params) {
 		UpdateWrapper<Link> wrapper = new UpdateWrapper<>();
@@ -151,8 +143,7 @@ public class LinkController {
 			return new JsonResponse(HttpUtils.Status_BadRequest, "修改失败！");
 		}
 	}
-	
-	@ApiOperation(value = "修改链接(请求体)")
+
 	@PutMapping("/admin/link")
 	public Object updateLink(@RequestBody Link link) {
 		if (service.updateById(link)) {
@@ -163,7 +154,6 @@ public class LinkController {
 		}
 	}
 
-	@ApiOperation(value = "删除链接")
 	@DeleteMapping("/admin/link/{id}")
 	public Object deleteLinkById(@PathVariable("id") Integer id) {
 		if (service.removeById(id)) {

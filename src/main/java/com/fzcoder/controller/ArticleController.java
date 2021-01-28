@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.fzcoder.aspect.RequestLimit;
 import com.fzcoder.bean.ArticleDownloadConfigInfo;
 import com.fzcoder.dto.ArticleForm;
 import com.fzcoder.service.*;
@@ -19,12 +18,9 @@ import com.fzcoder.entity.Article;
 import com.fzcoder.bean.JsonResponse;
 import com.fzcoder.utils.HttpUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Api(tags = "文章模块接口")
 @RestController
 @RequestMapping("/api")
 public class ArticleController {
@@ -32,11 +28,8 @@ public class ArticleController {
 	@Autowired
 	private ArticleService service;
 
-	// 对该接口的访问次数进行限制，每秒仅可访问一次
-	@RequestLimit
-	@ApiOperation(value = "添加文章")
 	@PostMapping("/admin/article")
-	public Object addArticle(@RequestBody ArticleForm form, HttpServletRequest request) {
+	public Object addArticle(@RequestBody ArticleForm form) {
 		// 插入数据
 		if (service.save(form)) {
 			return new JsonResponse(HttpServletResponse.SC_OK, "添加文章成功！");
@@ -45,7 +38,6 @@ public class ArticleController {
 		}
 	}
 
-	@ApiOperation(value = "获取文章视图")
 	@GetMapping("/admin/article/view")
 	public Object getOne(@RequestParam("aid") Long id) {
 		// 1.获取文章视图
@@ -58,8 +50,7 @@ public class ArticleController {
 			return new JsonResponse(post);
 		}
 	}
-	
-	@ApiOperation(value = "获取文章表单")
+
 	@GetMapping("/admin/article/form")
 	public Object getArticle(@RequestParam("aid") Long id) {
 		// 1.获取文章表单
@@ -73,7 +64,6 @@ public class ArticleController {
 		}
 	}
 
-	@ApiOperation(value = "获取文章列表")
 	@GetMapping("/admin/article")
 	public Object getPages(@RequestParam("uid") Integer uid,
 						   @RequestParam("key") String key,
@@ -91,21 +81,17 @@ public class ArticleController {
 		}
 	}
 
-
-	@ApiOperation(value = "上传文章")
 	@PostMapping("/admin/article/upload")
 	public void upload(HttpServletRequest request, HttpServletResponse response) {
 		service.upload(request, response);
 	}
-	
-	@ApiOperation(value = "下载文章")
+
 	@PostMapping("/admin/article/{id}/download")
 	public void download(@PathVariable("id") Long id, HttpServletResponse response,
 						 @RequestBody ArticleDownloadConfigInfo info) {
 		service.download(id, response, info);
 	}
 
-	@ApiOperation(value = "修改文章")
 	@PutMapping("/admin/article")
 	public Object setArticle(@RequestBody ArticleForm form) {
 		if (service.update(form)) {
@@ -115,7 +101,6 @@ public class ArticleController {
 		}
 	}
 
-	@ApiOperation(value = "修改文章局部信息")
 	@PatchMapping("/admin/article/{id}")
 	public Object updateArticleInfo(@PathVariable("id") Long id, @RequestBody Map<String, Object> map) {
 		if (map.containsKey("op") && map.containsKey("path") && map.containsKey("value")) {
@@ -141,7 +126,6 @@ public class ArticleController {
 		}
 	}
 
-	@ApiOperation(value = "删除文章")
 	@DeleteMapping("/admin/article/{id}")
 	public Object deleteArticle(@PathVariable("id") Long id) {
 		if (service.removeById(id)) {

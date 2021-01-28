@@ -2,13 +2,9 @@ package com.fzcoder.controller;
 
 import com.fzcoder.bean.JsonResponse;
 import com.fzcoder.service.*;
-import io.swagger.annotations.Api;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
-@Api(tags = "统计模块接口")
 @RequestMapping("/api")
 @RestController
 public class CountController {

@@ -14,15 +14,12 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("tb_user")
-@ApiModel(value="User对象", description="")
 public class User implements UserDetails, Serializable{
 
 	/**
@@ -30,59 +27,45 @@ public class User implements UserDetails, Serializable{
 	 */
 	private static final long serialVersionUID = 9067364805995616069L;
 
-	@ApiModelProperty(value = "id，作为唯一的表示")
     @TableId(value = "id", type = IdType.AUTO)
 	private Integer id;
-	
-	@ApiModelProperty(value = "用户名，不可重复")
+
     @TableField("username")
 	private String username;
 
-	@ApiModelProperty(value = "昵称")
 	@TableField("nickname")
 	private String nickname;
 
-	@ApiModelProperty(value = "用户头像")
 	@TableField("avatar")
 	private String avatar;
-	
-	@ApiModelProperty(value = "绑定邮箱")
+
     @TableField("email")
 	private String email;
 
-	@ApiModelProperty(value = "密码")
 	@TableField("home_page")
 	private String homePage;
 
-	@ApiModelProperty(value = "密码")
 	@TableField("github")
 	private String github;
 
-	@ApiModelProperty(value = "密码")
 	@TableField("gitee")
 	private String gitee;
-	
-	@ApiModelProperty(value = "密码")
+
     @TableField("password")
 	private String password;
 
-	@ApiModelProperty(value = "座右铭")
 	@TableField("motto")
 	private String motto;
 
-	@ApiModelProperty(value = "简介")
 	@TableField("introduction")
 	private String introduction;
-	
-	@ApiModelProperty(value = "是否被禁用")
+
     @TableField("enabled")
 	private Boolean enabled;
-	
-	@ApiModelProperty(value = "是否被锁定")
+
     @TableField("locked")
 	private Boolean locked;
 
-	@ApiModelProperty(value = "用户角色信息")
 	private List<Role> roles;
 
 	public Integer getId() {

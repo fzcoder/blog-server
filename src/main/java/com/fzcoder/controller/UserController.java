@@ -17,12 +17,8 @@ import com.fzcoder.service.RedisService;
 import com.fzcoder.service.UserService;
 import com.fzcoder.utils.HttpUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-
 import javax.servlet.http.HttpServletResponse;
 
-@Api(tags = "用户模块接口")
 @RestController
 @RequestMapping("/api")
 public class UserController {
@@ -33,17 +29,6 @@ public class UserController {
 	@Autowired
 	private RedisService redisService;
 
-	@ApiOperation(value = "用户注册")
-	// @PostMapping("/user")
-	public Object register(@RequestBody User user, @RequestParam Map<String, Object> map) {
-		if (service.save(user)) {
-			return new JsonResponse(HttpUtils.Status_OK, "注册成功!");
-		} else {
-			return new JsonResponse(HttpUtils.Status_BadRequest, "注册失败!");
-		}
-	}
-
-	@ApiOperation(value = "查询用户信息")
 	@GetMapping("/user/{id}")
 	public Object getUserInfo(@PathVariable("id") Integer id, @RequestParam Map<String, Object> params) {
 		QueryWrapper<User> wrapper = new QueryWrapper<>();
@@ -53,13 +38,11 @@ public class UserController {
 		return new JsonResponse(service.getMap(wrapper));
 	}
 
-	@ApiOperation(value = "查询用户信息(admin)")
 	@GetMapping("/admin/{id}")
 	public Object viewUserById(@PathVariable("id") Integer id, @RequestParam Map<String, Object> params) {
 		return new JsonResponse(service.getById(id));
 	}
 
-	@ApiOperation(value = "查询用户某一项信息(admin)")
 	@GetMapping("/admin/{id}/{column}")
 	public Object getColumnById(@PathVariable("id") Integer id, @PathVariable("column") String column) {
 		QueryWrapper<User> wrapper = new QueryWrapper<>();
@@ -68,7 +51,6 @@ public class UserController {
 		return new JsonResponse(service.getMap(wrapper));
 	}
 
-	@ApiOperation(value = "获取用户列表")
 	// @PostMapping("/admin/user")
 	public Object getPage(@RequestParam Map<String, Object> params, @RequestBody PageRequest pageRequest) {
 		// 1. 生成条件构造器
@@ -86,7 +68,6 @@ public class UserController {
 		return new JsonResponse(page);
 	}
 
-	@ApiOperation(value = "修改用户信息(请求体，一般信息)")
 	@PutMapping("/admin")
 	public Object updateUser(@RequestBody User user) {
 		user.setEnabled(true);
@@ -98,7 +79,6 @@ public class UserController {
 		}
 	}
 
-	@ApiOperation(value = "修改用户信息(单字段，敏感信息)")
 	@PutMapping("/admin/{id}/{column}")
 	public Object updateUser(@PathVariable("id") Integer id, @RequestBody Map<String, Object> params, @PathVariable("column") String column) {
 		switch (column) {
@@ -173,7 +153,6 @@ public class UserController {
 		}
 	}
 
-	@ApiOperation(value = "修改用户局部信息")
 	@PatchMapping("/admin/{id}")
 	public Object updateArticleInfo(@PathVariable("id") Integer id, @RequestBody Map<String, Object> map) {
 		if (map.containsKey("op") && map.containsKey("path") && map.containsKey("value")) {
