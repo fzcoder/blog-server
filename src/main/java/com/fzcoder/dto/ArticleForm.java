@@ -71,15 +71,10 @@ public class ArticleForm implements Serializable {
 
     // 构建一个Article对象
     public Article build() {
-        return this.build(this.id);
-    }
-
-    // 构建一个Article对象
-    public Article build(Long articleId) {
         // 1.实例化article对象
         Article article = new Article();
         // 2.将表单内容填入article对象中
-        article.setId(articleId);
+        article.setId(this.id);
         article.setAuthorId(this.authorId);
         article.setTitle(this.title);
         article.setIntroduction(this.introduction);

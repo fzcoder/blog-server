@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fzcoder.mapper.RecordMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.fzcoder.entity.Record">
+        <id column="id" property="id" />
+        <result column="uid" property="uid" />
+        <result column="create_time" property="createTime" />
+        <result column="create_date" property="createDate" />
+        <result column="record_type" property="recordType" />
+        <result column="object_id" property="objectId"/>
+        <result column="operation_type" property="operationType"/>
+        <result column="contribution" property="contribution" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, uid, create_time, create_date, record_type, object_id, operation_type, contribution
+    </sql>
+
+</mapper>

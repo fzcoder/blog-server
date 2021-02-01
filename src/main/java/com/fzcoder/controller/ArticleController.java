@@ -31,7 +31,7 @@ public class ArticleController {
 	@PostMapping("/admin/article")
 	public Object addArticle(@RequestBody ArticleForm form) {
 		// 插入数据
-		if (service.save(form)) {
+		if (service.save(form, new Date())) {
 			return new JsonResponse(HttpServletResponse.SC_OK, "添加文章成功！");
 		} else {
 			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "添加文章失败！");
@@ -94,7 +94,7 @@ public class ArticleController {
 
 	@PutMapping("/admin/article")
 	public Object setArticle(@RequestBody ArticleForm form) {
-		if (service.update(form)) {
+		if (service.update(form, new Date(), service.getById(form.getId()).getStatus())) {
 			return new JsonResponse(HttpServletResponse.SC_OK, "文章修改成功！");
 		} else {
 			return new JsonResponse(HttpServletResponse.SC_BAD_REQUEST, "文章修改失败！");
@@ -128,7 +128,7 @@ public class ArticleController {
 
 	@DeleteMapping("/admin/article/{id}")
 	public Object deleteArticle(@PathVariable("id") Long id) {
-		if (service.removeById(id)) {
+		if (service.removeById(service.getFormById(id), new Date())) {
 			return new JsonResponse(HttpUtils.Status_OK, "文章删除成功！");
 		} else {
 			return new JsonResponse(HttpUtils.Status_BadRequest, "文章删除失败！");

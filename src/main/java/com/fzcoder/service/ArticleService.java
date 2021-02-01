@@ -10,6 +10,7 @@ import com.fzcoder.vo.Post;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -20,15 +21,16 @@ import java.util.Map;
 public interface ArticleService extends IService<Article> {
 
     /**
-     * 添加文章
-     * @param form
+     * 保存文章
+     * @param form 表单
+     * @param date 日期
      * @return
      */
-    boolean save(ArticleForm form);
+    boolean save(ArticleForm form, Date date);
 
     /**
      * 根据id获取文章视图
-     * @param id
+     * @param id 文章id
      * @return
      */
     Post getViewById(Long id);
@@ -42,12 +44,12 @@ public interface ArticleService extends IService<Article> {
 
     /**
      * 获取文章列表
-     * @param uid
-     * @param keyword
-     * @param pageNum
-     * @param pageSize
-     * @param status
-     * @param params
+     * @param uid 作者id
+     * @param keyword 关键字
+     * @param pageNum 页数
+     * @param pageSize 每页的数量
+     * @param status 状态
+     * @param params 参数
      * @return
      */
     IPage<ArticleView> getPages(Integer uid, String keyword,
@@ -68,17 +70,22 @@ public interface ArticleService extends IService<Article> {
      */
     void download(Long articleId, HttpServletResponse response, ArticleDownloadConfigInfo info);
 
-    /**
-     * 更新文章
-     * @param form
-     * @return
-     */
-    boolean update(ArticleForm form);
 
     /**
-     * 根据id删除文章
-     * @param id
+     *  修改文章
+     * @param form 表单
+     * @param date 日期
+     * @param beforeStatus 修改前的状态
      * @return
      */
-    boolean removeById(Long id);
+    boolean update(ArticleForm form, Date date, Integer beforeStatus);
+
+
+    /**
+     * 删除文章
+     * @param form 表单
+     * @param date 日期
+     * @return
+     */
+    boolean removeById(ArticleForm form, Date date);
 }

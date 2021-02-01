@@ -10,6 +10,7 @@ import com.fzcoder.vo.Post;
 import org.apache.ibatis.annotations.Param;
 
 import java.io.Serializable;
+import java.util.List;
 
 public interface ArticleMapper extends BaseMapper<Article> {
 
@@ -19,6 +20,14 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @return
      */
     Post selectPostById(Long id);
+
+    /**
+     *
+     * @param uid
+     * @param date
+     * @return
+     */
+    List<ArticleView> selectListByDate(@Param("uid") Long uid, @Param("create_date") String date);
 
     /**
      * 获取文章列表

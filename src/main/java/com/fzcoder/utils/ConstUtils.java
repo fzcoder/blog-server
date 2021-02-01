@@ -21,48 +21,67 @@ public interface ConstUtils {
     int ARTICLE_STATUS_REMOVED = 2;
 
     /**
-     * 事件状态
+     * 记录类型：文章
      */
-    String EVENT_TYPE_INFO = "info";
+    String RECORD_TYPE_ARTICLE = "ARTICLE";
 
     /**
-     *
+     * 记录类型：目录
      */
-    String EVENT_TYPE_SUCCESS = "success";
+    String RECORD_TYPE_CATEGORY = "CATEGORY";
 
     /**
-     *
+     * 记录类型：标签
      */
-    String EVENT_TYPE_PRIMARY = "primary";
+    String RECORD_TYPE_TAG = "TAG";
 
     /**
-     *
+     * 操作类型：添加草稿
      */
-    String EVENT_TYPE_WARNING = "warning";
+    String RECORD_OP_DRAFT = "DRAFT";
 
     /**
-     *
+     * 操作类型：发布文章
      */
-    String EVENT_TYPE_DANGER = "danger";
-
-    String EVENT_POSITION_LEFT = "left";
-
-    String EVENT_POSITION_CENTER = "center";
-
-    String EVENT_POSITION_RIGHT = "right";
+    String RECORD_OP_PUBLISH = "PUBLISH";
 
     /**
-     *
+     * 操作类型：更新文章
      */
-    int EVENT_CONTRIBUTION_PUBLISHED = 2;
+    String RECORD_OP_UPDATE = "UPDATE";
 
     /**
-     *
+     * 操作类型：更新草稿
      */
-    int EVENT_CONTRIBUTION_DRAFT = 1;
+    String RECORD_OP_UPDATE_DRAFT = "UPDATE_DRAFT";
 
     /**
-     *
+     * 操作类型：移除文章
      */
-    int EVENT_CONTRIBUTION_NONE = 0;
+    String RECORD_OP_REMOVE = "REMOVE";
+
+    /**
+     * 操作类型：移除草稿
+     */
+    String RECORD_OP_REMOVE_DRAFT = "REMOVE_DRAFT";
+
+    /**
+     * 操作类型：删除文章
+     */
+    String RECORD_OP_DELETE = "DELETE";
+
+    /**
+     * 操作类型：删除草稿
+     */
+    String RECORD_OP_DELETE_DRAFT = "DELETE_DRAFT";
+
+    /**
+     * 操作贡献度：1
+     */
+    int RECORD_CONTRIBUTION_PUBLISHED = 1;
+
+    /**
+     * 操作贡献度：0
+     */
+    int RECORD_CONTRIBUTION_NONE = 0;
 }

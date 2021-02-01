@@ -21,24 +21,23 @@
     <resultMap id="DynamicMap" type="com.fzcoder.bean.Dynamic">
         <result column="time_stamp" property="timeStamp"></result>
         <collection property="content"
-                    column="{create_date=time_stamp,uid=uid}"
-                    select="com.fzcoder.mapper.EventMapper.selectListWithCreateDate"/>
+                    column="{create_date=time_stamp,uid=author_id}"
+                    select="com.fzcoder.mapper.ArticleMapper.selectListByDate"/>
     </resultMap>
 
     <select id="selectDynamicList" resultMap="DynamicMap">
-        SELECT create_date AS time_stamp, uid FROM tb_event
-        WHERE uid=#{uid} AND create_date BETWEEN #{start_date} AND #{end_date}
-        GROUP BY create_date
-        ORDER BY create_date DESC
+        SELECT t.* FROM
+        (SELECT t_a.author_id, t_a.status, DATE_FORMAT(date, '%Y-%m') AS time_stamp FROM tb_article AS t_a)t
+        WHERE
+        t.author_id = #{uid} AND t.status = 1 AND time_stamp BETWEEN #{start_date} AND #{end_date}
+        GROUP BY time_stamp ORDER BY time_stamp DESC
     </select>
 
     <select id="selectContributionList" resultType="java.util.Map">
         SELECT create_date AS `date`, SUM(contribution) AS contribution
-        FROM tb_event
+        FROM tb_record
         WHERE
-        uid=#{uid} AND
-        status=1 AND
-        create_date BETWEEN #{start_date} AND #{end_date}
+        uid=#{uid} AND create_date BETWEEN #{start_date} AND #{end_date}
         GROUP BY create_date
     </select>
 

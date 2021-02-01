@@ -11,7 +11,6 @@
         <result column="update_time" property="updateTime" />
         <result column="introduction" property="introduction" />
         <result column="category_id" property="categoryId" />
-        <result column="tags" property="tags" />
         <result column="cover" property="cover" />
         <result column="content_md" property="contentMd" />
         <result column="content_html" property="contentHtml" />
@@ -51,22 +50,31 @@
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id, author_id, title, date, update_time, introduction, category_id,
-        tags, cover, content_md, content_html, status
+        cover, content_md, content_html, status
     </sql>
 
     <select id="selectPostById" resultMap="PostMap">
         SELECT
         id, author_id, title, `date`, update_time,
-        introduction, category_id, tags, cover, content_html
+        introduction, category_id, cover, content_html
         FROM
         tb_article
-        WHERE id = #{id}
+        WHERE id = #{id} AND status = 1
+    </select>
+
+    <select id="selectListByDate" resultMap="ArticleViewMap">
+        SELECT
+        t_a.*
+        FROM
+        (SELECT t.id, t.author_id, t.title, t.`date`, t.introduction, t.category_id, t.cover, t.status,
+        DATE_FORMAT(date, '%Y-%m') AS time_stamp FROM tb_article As t)t_a
+        WHERE
+        t_a.author_id = #{uid} AND time_stamp = #{create_date} AND t_a.status = 1
     </select>
 
     <select id="selectPages" resultMap="ArticleViewMap">
         SELECT
-        id, author_id, title, `date`, update_time,
-        introduction, category_id, tags, cover
+        id, author_id, title, `date`, update_time, introduction, category_id, cover
         FROM
         tb_article
         ${ew.customSqlSegment}

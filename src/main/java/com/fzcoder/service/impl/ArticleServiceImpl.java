@@ -3,18 +3,16 @@ package com.fzcoder.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fzcoder.annotation.*;
 import com.fzcoder.bean.ArticleDownloadConfigInfo;
 import com.fzcoder.dto.ArticleForm;
 import com.fzcoder.mapper.CategoryMapper;
-import com.fzcoder.service.EventService;
 import com.fzcoder.service.TagService;
-import com.fzcoder.utils.ConstUtils;
 import com.fzcoder.utils.IdGenerator;
 import com.fzcoder.vo.ArticleView;
 import com.fzcoder.vo.Post;
 import com.fzcoder.vo.TagView;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -35,23 +33,23 @@ import java.util.*;
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
-    @Autowired
     private ArticleMapper articleMapper;
 
-    @Autowired
     private CategoryMapper categoryMapper;
 
-    @Autowired
     private TagService tagService;
 
-    @Autowired
-    private EventService eventService;
+    public ArticleServiceImpl(ArticleMapper articleMapper, CategoryMapper categoryMapper, TagService tagService) {
+        this.articleMapper = articleMapper;
+        this.categoryMapper = categoryMapper;
+        this.tagService = tagService;
+    }
 
+    @Record(type = RecordType.ARTICLE, operationType = RecordOperationType.CREATE)
     @Override
-    public synchronized boolean save(ArticleForm form) {
+    public boolean save(@RecordParam(RecordParamType.ENTITY) ArticleForm form,
+                        @RecordParam(RecordParamType.DATE) Date date) {
         try {
-            // 获取文章创建时间
-            Date date = new Date();
             // 文章id的容量
             int max = 1000;
             // 生成文章id
@@ -72,8 +70,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     return false;
                 }
             }
+            // 填入id
+            form.setId(id);
             // 构建Article对象
-            Article article = form.build(id);
+            Article article = form.build();
             // 对时间进行格式化
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             // 设置时区为东8区(北京时间)
@@ -84,8 +84,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             article.setUpdateTime(sdf.format(date));
             // 将文章添加至数据库中
             boolean result = articleMapper.insert(article) > 0;
-            // 添加记录
-            eventService.handleInsertArticleEvent(date, article, result);
             // 处理文章标签
             log.info("try to process tags...");
             tagService.saveRelation(form.getTags(), id);
@@ -297,12 +295,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
     }
 
+    @Record(type = RecordType.ARTICLE, operationType = RecordOperationType.UPDATE)
     @Override
-    public boolean update(ArticleForm form) {
+    public boolean update(@RecordParam(RecordParamType.ENTITY) ArticleForm form,
+                          @RecordParam(RecordParamType.DATE) Date date,
+                          @RecordParam(RecordParamType.STATUS) Integer beforeStatus) {
         // 获取文章实体对象
         Article article = form.build();
-        // 获取文章创建时间
-        Date date = new Date();
         // 对时间进行格式化
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         // 设置时区为东8区(北京时间)
@@ -311,30 +310,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setUpdateTime(sdf.format(date));
         // 处理文章标签
         tagService.saveOrUpdateRelation(form.getTags(), article.getId());
-        // 判断是否为草稿
-        boolean isDraft = articleMapper
-                .selectById(article.getId())
-                .getStatus() == ConstUtils.ARTICLE_STATUS_DRAFT;
         // 更新文章并返回结果
-        if (articleMapper.updateById(article) > 0) {
-            // 添加记录
-            eventService.handleUpdateArticleEvent(date, article, true, isDraft);
-            return true;
-        } else {
-            // 添加记录
-            eventService.handleUpdateArticleEvent(date, article, false, isDraft);
-            return false;
-        }
+        return articleMapper.updateById(article) > 0;
     }
 
+    @Record(type = RecordType.ARTICLE, operationType = RecordOperationType.DELETE)
     @Override
-    public boolean removeById(Long id) {
+    public boolean removeById(@RecordParam(RecordParamType.ENTITY) ArticleForm form,
+                              @RecordParam(RecordParamType.DATE) Date date) {
         // 1.删除所有tag-article关联
-        tagService.removeRelationByAid(id);
+        tagService.removeRelationByAid(form.getId());
         // 2.删除文章并返回结果
-        boolean result = articleMapper.deleteById(id) > 0;
-        // 3.添加删除记录
-        eventService.handleDeleteArticleEvent(new Date(), id, result);
-        return result;
+        return articleMapper.deleteById(form.getId()) > 0;
     }
 }

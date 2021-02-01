@@ -12,11 +12,11 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class TagForm implements Serializable {
     // 标签id
-    String tagId;
+    private String tagId;
     // 标签名称
-    String tagName;
+    private String tagName;
     // 描述
-    String description;
+    private String description;
 
     /**
      *
