@@ -1,7 +1,5 @@
 package com.fzcoder.bean;
 
-import com.fzcoder.entity.Event;
-import com.fzcoder.entity.Record;
 import com.fzcoder.vo.ArticleView;
 import lombok.*;
 
