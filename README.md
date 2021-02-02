@@ -1,6 +1,6 @@
 ##  BLOG-SERVER
 
-一个采用 [Spring Boot](https://spring.io/projects/spring-boot) 和 [Mybatis](https://mybatis.org/mybatis-3/) 框架编写的个人博客网站服务端应用程序。
+一个采用 [Spring Boot](https://spring.io/projects/spring-boot) 和 [Mybatis](https://mybatis.org/mybatis-3/) 框架编写的个人博客网站服务端应用程序，可作为静态博客使用者的在线博客编辑和下载网站。
 
 ### 一、项目简介
 
@@ -10,11 +10,11 @@
 
 项目的 Web 端地址为: [https://github.com/fzcoder/blog-web](https://github.com/fzcoder/blog-web)
 
-注：自`v2.0`版本起，本项目将不再支持该项目的 Web 端，若需支持 Web 端，请下载`v1.x`版本。
+注：自`v2.0`版本起，本项目将不再支持该项目的 Web 端，若需支持 Web 端，请下载`v1.x`版本。（本人更加推荐使用静态博客作为 Web 端）
 
 ### 二、功能特性
 
-详见 [Release](https://github.com/fzcoder/blog-server/releases) 版本说明。
+本项目自`v2.0`版本起将支持在下载文章时添加一些静态博客（如：[hexo](https://github.com/hexojs/hexo)、[hugo](https://github.com/gohugoio/hugo) 等）所需要的一些头部信息，方便配合静态博客。关于本项目更多的功能特性，请详见 [Release](https://github.com/fzcoder/blog-server/releases) 版本说明。
 
 ### 三、安装部署
 
