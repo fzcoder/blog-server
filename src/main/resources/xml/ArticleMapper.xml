@@ -66,10 +66,11 @@
         SELECT
         t_a.*
         FROM
-        (SELECT t.id, t.author_id, t.title, t.`date`, t.introduction, t.category_id, t.cover, t.status,
+        (SELECT t.id, t.author_id, t.title, t.`date`, t.update_time, t.introduction, t.category_id, t.cover, t.status,
         DATE_FORMAT(date, '%Y-%m') AS time_stamp FROM tb_article As t)t_a
         WHERE
         t_a.author_id = #{uid} AND time_stamp = #{create_date} AND t_a.status = 1
+        ORDER BY t_a.date DESC
     </select>
 
     <select id="selectPages" resultMap="ArticleViewMap">
