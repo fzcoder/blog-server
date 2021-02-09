@@ -12,7 +12,7 @@ import com.fzcoder.entity.User;
 import com.fzcoder.mapper.UserMapper;
 import com.fzcoder.service.UserService;
 
-@Service
+@Service("userService")
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserDetailsService, UserService {
 
 	@Autowired

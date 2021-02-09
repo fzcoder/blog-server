@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-public class VerificationController {
+public class SecurityController {
 
 	@Autowired
 	private UserService userService;
@@ -32,7 +32,7 @@ public class VerificationController {
 	@Autowired
 	private TemplateEngine templateEngine;
 
-	@GetMapping("/verify/{type}")
+	@GetMapping("/auth/verify/{type}")
 	public Object getVerificationCode(@PathVariable("type") String type, @RequestParam Map<String, Object> params) {
 		// 收信人
 		String to;
@@ -96,7 +96,7 @@ public class VerificationController {
 		return new JsonResponse(HttpUtils.Status_OK, "验证码发送成功！");
 	}
 
-	@PostMapping("/verify/check")
+	@PostMapping("/auth/verify/check")
 	public Object verificationCodeCheck(@RequestParam("key") Object key, @RequestParam("value") Object value) {
 		// 验证码校验
 		if (redisService.get(key) != null && redisService.get(key).equals(value)) {

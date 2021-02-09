@@ -1,9 +1,13 @@
 package com.fzcoder.utils;
  
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
- 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -19,45 +23,56 @@ import java.util.List;
  * } 表明使用的加密算法，和token的类型==>默认是JWT
  *
  */
+@Component
+@PropertySource(value = {"classpath:application.properties"}, encoding = "utf-8")
 public class JwtTokenUtils {
- 
+
+    // 请求头名称
     public static final String TOKEN_HEADER = "Authorization";
+
+    // Token前缀
     public static final String TOKEN_PREFIX = "Bearer ";
- 
-    //密钥，用于signature（签名）部分解密
-    private static final String PRIMARY_KEY = "MyJwtSecret";
-    //签发者
-    private static final String ISS = "FrankFang";
+
     // 添加角色的key
     private static final String ROLE_CLAIMS = "role";
  
-    // 过期时间是3600秒，既是1个小时
-    private static final long EXPIRATION = 3600L;
+    //密钥，用于signature（签名）部分解密
+    @Value("${jwt.secret}")
+    private String SECRET;
+    //签发者
+    @Value("${jwt.iss}")
+    private String ISS;
  
-    // 选择了记住我之后的过期时间为7天
-    // private static final long EXPIRATION_REMEMBER = 604800L;
+    // 过期时间
+    @Value("${jwt.expiration}")
+    private long EXPIRATION;
+ 
+    // 选择了记住我之后的过期时间
+    @Value("${jwt.expiration.remember}")
+    private long EXPIRATION_REMEMBER;
  
     /**
      * description: 创建Token
      *
      * @param username
+     * @param roles
      * @param isRememberMe
      * @return java.lang.String
      */
-    public static String createToken(String username, List<String> roles) {
-        // long expiration = isRememberMe ? EXPIRATION_REMEMBER : EXPIRATION;
+    public String createToken(String username, List<String> roles, Boolean isRememberMe) {
+        long expiration = isRememberMe ? EXPIRATION_REMEMBER : EXPIRATION;
         HashMap<String, Object> map = new HashMap<>();
         map.put(ROLE_CLAIMS, roles);
         return Jwts.builder()
                 //采用HS512算法对JWT进行的签名,PRIMARY_KEY是我们的密钥
-                .signWith(SignatureAlgorithm.HS512, PRIMARY_KEY)
+                .signWith(SignatureAlgorithm.HS512, SECRET)
                 //设置角色名
                 .setClaims(map)
                 //设置发证人
                 .setIssuer(ISS)
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION * 24 * 1000))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000))
                 .compact();
     }
  
@@ -67,13 +82,13 @@ public class JwtTokenUtils {
      * @param token
      * @return java.lang.String
      */
-    public static String getUsername(String token){
+    public String getUsername(String token){
         return getTokenBody(token).getSubject();
     }
  
     // 获取用户角色
 	@SuppressWarnings("unchecked")
-	public static List<String> getUserRole(String token){
+	public List<String> getUserRole(String token){
         return (List<String>) getTokenBody(token).get(ROLE_CLAIMS);
     }
  
@@ -83,8 +98,13 @@ public class JwtTokenUtils {
      * @param token
      * @return boolean
      */
-    public static boolean isExpiration(String token){
-        return getTokenBody(token).getExpiration().before(new Date());
+    public boolean isExpiration(String token){
+        try {
+            return getTokenBody(token).getExpiration().before(new Date());
+        } catch (ExpiredJwtException e1) {
+            // 当抛出ExpiredJwtException异常时表明Token已经过期
+            return true;
+        }
     }
  
     /**
@@ -93,9 +113,9 @@ public class JwtTokenUtils {
      * @param token
      * @return io.jsonwebtoken.Claims
      */
-    private static Claims getTokenBody(String token){
+    private Claims getTokenBody(String token){
         return Jwts.parser()
-                .setSigningKey(PRIMARY_KEY)
+                .setSigningKey(SECRET)
                 .parseClaimsJws(token)
                 .getBody();
     }

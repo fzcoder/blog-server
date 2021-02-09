@@ -8,10 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fzcoder.entity.User;
-import com.fzcoder.bean.PageRequest;
 import com.fzcoder.bean.JsonResponse;
 import com.fzcoder.service.RedisService;
 import com.fzcoder.service.UserService;
@@ -49,23 +46,6 @@ public class UserController {
 		wrapper.select(column);
 		wrapper.eq("id", id);
 		return new JsonResponse(service.getMap(wrapper));
-	}
-
-	// @PostMapping("/admin/user")
-	public Object getPage(@RequestParam Map<String, Object> params, @RequestBody PageRequest pageRequest) {
-		// 1. 生成条件构造器
-		QueryWrapper<User> wrapper = new QueryWrapper<>();
-		String[] sqlSelect = { "id", "username", "nickname", "email", "avatar", "motto", "introduction", "enable",
-				"locked" };
-		wrapper.allEq(params);
-		wrapper.like(true, "title", pageRequest.getKey());
-		wrapper.select(sqlSelect);
-		wrapper.orderBy(true, !pageRequest.isReverse(), pageRequest.getOrderBy());
-		// 2. 分页查询
-		IPage<Map<String, Object>> page = service
-				.pageMaps(new Page<>(pageRequest.getPageNum(), pageRequest.getPageSize()), wrapper);
-		// 3. 返回结果
-		return new JsonResponse(page);
 	}
 
 	@PutMapping("/admin")
