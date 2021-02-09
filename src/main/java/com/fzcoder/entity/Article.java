@@ -24,9 +24,6 @@ import lombok.experimental.Accessors;
 @TableName("tb_article")
 public class Article implements Serializable {
 
-	/**
-	 * 实现序列化接口
-	 */
     @TableId("id")
 	private Long id;
 
@@ -47,9 +44,6 @@ public class Article implements Serializable {
 
     @TableField("category_id")
 	private String categoryId;
-
-    @TableField("tags")
-	private String tags;
 
 	@TableField("cover")
 	private String cover;
