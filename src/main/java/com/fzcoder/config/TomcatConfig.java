@@ -9,8 +9,12 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
 
+@Profile("prod")
 @Configuration
+@PropertySource("classpath:application.properties")
 public class TomcatConfig {
 
     @Value("${tomcat.listen.port}")
