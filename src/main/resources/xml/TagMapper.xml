@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.fzcoder.mapper.TagMapper">
+<mapper namespace="com.fzcoder.opensource.blog.mapper.ITagMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.fzcoder.entity.Tag">
+    <resultMap id="BaseResultMap" type="com.fzcoder.opensource.blog.entity.Tag">
         <id column="tag_id" property="tagId" />
         <result column="tag_name" property="tagName" />
         <result column="description" property="description" />
@@ -26,15 +26,15 @@
         SELECT COUNT(tag_name) FROM tb_tag WHERE tag_name = #{name}
     </select>
 
-    <select id="selectByName" resultType="com.fzcoder.entity.Tag">
+    <select id="selectByName" resultType="com.fzcoder.opensource.blog.entity.Tag">
         SELECT * FROM tb_tag WHERE tag_name = #{name}
     </select>
 
-    <select id="selectViewList" resultType="com.fzcoder.vo.TagView">
+    <select id="selectViewList" resultType="com.fzcoder.opensource.blog.vo.TagView">
         SELECT tag_id, tag_name FROM tb_tag ${ew.customSqlSegment}
     </select>
 
-    <select id="selectRelationList" resultType="com.fzcoder.vo.TagView">
+    <select id="selectRelationList" resultType="com.fzcoder.opensource.blog.vo.TagView">
         SELECT tb_tag.tag_id, tb_tag.tag_name
         FROM
         tb_tag, tb_tag_article

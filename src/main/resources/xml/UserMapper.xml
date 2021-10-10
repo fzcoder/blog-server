@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.fzcoder.mapper.UserMapper">
+<mapper namespace="com.fzcoder.opensource.blog.mapper.IUserMapper">
 
 	<!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.fzcoder.entity.User">
+    <resultMap id="BaseResultMap" type="com.fzcoder.opensource.blog.entity.User">
         <id column="id" property="id" />
         <result column="username" property="username" />
 		<result column="nickname" property="nickname" />
@@ -24,11 +24,11 @@
         id, username, nickname, avatar, email, password, motto, introduction, enabled, locked
     </sql>
 
-	<select id="selectRolesByUid" resultType="com.fzcoder.entity.Role">
+	<select id="selectRolesByUid" resultType="com.fzcoder.opensource.blog.entity.Role">
 		SELECT tb_role.* FROM tb_role INNER JOIN tb_user_role WHERE tb_role.id = tb_user_role.rid AND tb_user_role.uid = #{uid}
 	</select>
 
-    <select id="selectViewObjectById" resultType="com.fzcoder.vo.UserView">
+    <select id="selectViewObjectById" resultType="com.fzcoder.opensource.blog.vo.UserView">
         SELECT
         id AS userId,
         nickname,

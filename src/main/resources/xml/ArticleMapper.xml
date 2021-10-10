@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.fzcoder.mapper.ArticleMapper">
+<mapper namespace="com.fzcoder.opensource.blog.mapper.IArticleMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.fzcoder.entity.Article">
+    <resultMap id="BaseResultMap" type="com.fzcoder.opensource.blog.entity.Article">
         <id column="id" property="id" />
         <result column="author_id" property="authorId" />
         <result column="title" property="title" />
@@ -18,7 +18,7 @@
     </resultMap>
 
     <!-- Article VO -->
-    <resultMap id="ArticleViewMap" type="com.fzcoder.vo.ArticleView">
+    <resultMap id="ArticleViewMap" type="com.fzcoder.opensource.blog.vo.ArticleView">
         <id column="id" property="id" />
         <result column="title" property="title" />
         <result column="date" property="createTime" />
@@ -26,24 +26,24 @@
         <result column="introduction" property="introduction" />
         <result column="cover" property="cover" />
         <association property="author"
-                     javaType="com.fzcoder.vo.UserView"
+                     javaType="com.fzcoder.opensource.blog.vo.UserView"
                      column="author_id"
-                     select="com.fzcoder.mapper.UserMapper.selectViewObjectById" />
+                     select="com.fzcoder.opensource.blog.mapper.UserMapper.selectViewObjectById" />
         <association property="category"
-                     javaType="com.fzcoder.vo.CategoryView"
+                     javaType="com.fzcoder.opensource.blog.vo.CategoryView"
                      column="category_id"
-                     select="com.fzcoder.mapper.CategoryMapper.selectViewObjectById" />
+                     select="com.fzcoder.opensource.blog.mapper.CategoryMapper.selectViewObjectById" />
         <collection property="tags"
                     javaType="java.util.List"
                     column="id"
-                    select="com.fzcoder.mapper.TagMapper.selectRelationList">
+                    select="com.fzcoder.opensource.blog.mapper.TagMapper.selectRelationList">
             <id property="tagId" column="tag_id"/>
             <result property="tagName" column="tag_name"/>
         </collection>
     </resultMap>
 
     <!-- 展示文章VO -->
-    <resultMap id="PostMap" type="com.fzcoder.vo.Post" extends="ArticleViewMap">
+    <resultMap id="PostMap" type="com.fzcoder.opensource.blog.vo.Post" extends="ArticleViewMap">
         <result column="content_html" property="contentHtml" />
     </resultMap>
 

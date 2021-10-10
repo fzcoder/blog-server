@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.fzcoder.mapper.CountMapper">
+<mapper namespace="com.fzcoder.opensource.blog.mapper.ICountMapper">
 
     <select id="selectArticleRecords" resultType="java.util.Map">
         SELECT
@@ -18,11 +18,11 @@
           tb_article.author_id = #{uid}
     </select>
 
-    <resultMap id="DynamicMap" type="com.fzcoder.bean.Dynamic">
+    <resultMap id="DynamicMap" type="com.fzcoder.opensource.blog.bean.Dynamic">
         <result column="time_stamp" property="timeStamp"></result>
         <collection property="content"
                     column="{create_date=time_stamp,uid=author_id}"
-                    select="com.fzcoder.mapper.ArticleMapper.selectListByDate"/>
+                    select="com.fzcoder.opensource.blog.mapper.ArticleMapper.selectListByDate"/>
     </resultMap>
 
     <select id="selectDynamicList" resultMap="DynamicMap">
