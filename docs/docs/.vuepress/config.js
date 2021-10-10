@@ -1,5 +1,5 @@
 module.exports = {
-    base: '/blog-server/',
+    base: '/',
     locales: {
         // en-US
         '/': {
