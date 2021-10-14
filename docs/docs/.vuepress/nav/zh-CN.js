@@ -1,15 +1,15 @@
 module.exports = [
     {
         text: '文档',
-        link: '/docs/'
+        link: '/zh/docs/'
     },
     {
         text: 'API',
-        link: '/api/'
+        link: '/zh/api/'
     },
     {
         text: '关于',
-        link: '/about'
+        link: '/zh/about'
     },
     {
         text: 'Github',

@@ -1,5 +1,5 @@
 ---
-title: 简介
+title: About
 lang: en-US
 ---
 
