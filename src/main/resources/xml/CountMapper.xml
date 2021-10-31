@@ -22,7 +22,7 @@
         <result column="time_stamp" property="timeStamp"></result>
         <collection property="content"
                     column="{create_date=time_stamp,uid=author_id}"
-                    select="com.fzcoder.opensource.blog.mapper.ArticleMapper.selectListByDate"/>
+                    select="com.fzcoder.opensource.blog.mapper.IArticleMapper.selectListByDate"/>
     </resultMap>
 
     <select id="selectDynamicList" resultMap="DynamicMap">

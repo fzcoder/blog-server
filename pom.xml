@@ -21,6 +21,7 @@
 		<mybatisplus.version>3.1.0</mybatisplus.version>
 		<aliyunoss.version>3.8.0</aliyunoss.version>
 		<jwt.version>0.9.0</jwt.version>
+		<docker.image.prefix>opensource.frankfang.cn</docker.image.prefix>
 	</properties>
 
 	<dependencies>
@@ -132,6 +133,49 @@
 					</nonFilteredFileExtensions>
 				</configuration>
 				<version>3.1.0</version>
+			</plugin>
+			<!-- docker构建插件 -->
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<configuration>
+					<!-- 生成的docker镜像名称  -->
+					<imageName>${docker.image.prefix}/${project.artifactId}</imageName>
+					<!--指定dockerfile路径-->
+					<!--<dockerDirectory>${project.basedir}</dockerDirectory>-->
+					<!--指定远程docker地址-->
+					<dockerHost>http://docker-daemon:2375</dockerHost>
+					<!--指定pem证书文件路径地址 -->
+					<dockerCertPath>${project.basedir}/src/main/resources/ssl/docker</dockerCertPath>
+					<!--指定标签-->
+					<imageTags>
+						<imageTag>${project.version}</imageTag>
+					</imageTags>
+					<!--
+					<buildArgs>
+						<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+					</buildArgs>
+					-->
+					<!--基础镜像jdk1.8-->
+					<baseImage>java</baseImage>
+					<!--制作者提供本人信息-->
+					<maintainer>username@gmail.com</maintainer>
+					<!--切换到ROOT目录-->
+					<workdir>/ROOT</workdir>
+					<cmd>["java","-version"]</cmd>
+					<entryPoint>["java","-jar","${project.build.finalName}.jar"]</entryPoint>
+					<!--这里是复制jar包到docker容器指定目录配置-->
+					<resources>
+						<resource>
+							<targetPath>/ROOT</targetPath>
+							<!--指定需要复制的根目录，${project.build.directory}表示target目录-->
+							<directory>${project.build.directory}</directory>
+							<!--用于指定需要复制的文件，${project.build.finalName}.jar表示打包后的jar包文件-->
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+					</resources>
+				</configuration>
 			</plugin>
 		</plugins>
 

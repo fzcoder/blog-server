@@ -28,15 +28,15 @@
         <association property="author"
                      javaType="com.fzcoder.opensource.blog.vo.UserView"
                      column="author_id"
-                     select="com.fzcoder.opensource.blog.mapper.UserMapper.selectViewObjectById" />
+                     select="com.fzcoder.opensource.blog.mapper.IUserMapper.selectViewObjectById" />
         <association property="category"
                      javaType="com.fzcoder.opensource.blog.vo.CategoryView"
                      column="category_id"
-                     select="com.fzcoder.opensource.blog.mapper.CategoryMapper.selectViewObjectById" />
+                     select="com.fzcoder.opensource.blog.mapper.ICategoryMapper.selectViewObjectById" />
         <collection property="tags"
                     javaType="java.util.List"
                     column="id"
-                    select="com.fzcoder.opensource.blog.mapper.TagMapper.selectRelationList">
+                    select="com.fzcoder.opensource.blog.mapper.ITagMapper.selectRelationList">
             <id property="tagId" column="tag_id"/>
             <result property="tagName" column="tag_name"/>
         </collection>
