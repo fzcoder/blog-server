@@ -1,15 +1,10 @@
 module.exports = [
     {
-        text: 'Documents',
-        link: '/docs/'
-    },
-    {
-        text: 'API',
-        link: '/api/'
-    },
-    {
-        text: 'About',
-        link: '/about'
+        text: 'v2.x',
+        ariaLabel: 'v2.x',
+        items: [
+          { text: 'v1.x', link: '/v1.x/' }
+        ]
     },
     {
         text: 'Github',

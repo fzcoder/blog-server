@@ -1,15 +1,10 @@
 module.exports = [
     {
-        text: '文档',
-        link: '/zh/docs/'
-    },
-    {
-        text: 'API',
-        link: '/zh/api/'
-    },
-    {
-        text: '关于',
-        link: '/zh/about'
+        text: 'v2.x',
+        ariaLabel: 'v2.x',
+        items: [
+          { text: 'v1.x', link: '/zh/v1.x/' }
+        ]
     },
     {
         text: 'Github',
